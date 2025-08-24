@@ -221,7 +221,7 @@ export default function Home() {
 
       {/* Hero Section */}
       <div
-        className="relative h-96 bg-cover bg-center"
+        className="relative h-72 bg-cover bg-center"
         style={{
           backgroundImage: `url('/cityscape-background.jpg')`,
         }}
