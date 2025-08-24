@@ -174,7 +174,7 @@ class ApiClient {
   async getPopularItems(category: string): Promise<{ items: Item[] }> {
     return this.request<{ items: Item[] }>(`/items?category=${category}`)
   }
-
+    
   async getItemById(itemId: string): Promise<Item> {
     return this.request<Item>(`/items/${itemId}`)
   }
