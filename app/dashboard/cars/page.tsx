@@ -158,7 +158,7 @@ export default function CarsPage() {
                       </div>
                       <div className="flex space-x-2">
                         {(car.status || "AVAILABLE") === "AVAILABLE" || (car.status || "ACTIVE") === "ACTIVE" ? (
-                          <Link href={`/dashboard/cars/${car._id}/book`}>
+                          <Link href={`/description/${car._id}`}>
                             <Button className="bg-red-600 hover:bg-red-700">Book Now</Button>
                           </Link>
                         ) : (

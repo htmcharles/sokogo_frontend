@@ -140,7 +140,7 @@ export default function ElectronicsPage() {
                       </div>
                       <div className="flex space-x-2">
                         {(item.status || "AVAILABLE") === "AVAILABLE" || (item.status || "ACTIVE") === "ACTIVE" ? (
-                          <Link href={`/dashboard/electronics/${item._id}/book`}>
+                          <Link href={`/description/${item._id}`}>
                             <Button className="bg-red-600 hover:bg-red-700">Book Now</Button>
                           </Link>
                         ) : (
