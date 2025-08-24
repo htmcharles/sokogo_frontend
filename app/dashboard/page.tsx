@@ -10,7 +10,7 @@ import { useState } from "react"
 import { User, Mail, Phone, MapPin, Tag, Edit } from "lucide-react"
 
 export default function DashboardPage() {
-  const { user, logout } = useAuth()
+  const { user, logout, isAdmin, isSeller, isBuyer } = useAuth()
   const [activeTab, setActiveTab] = useState("information")
 
   const handleLogout = () => {
@@ -34,15 +34,44 @@ export default function DashboardPage() {
                 <Link href="/dashboard" className="text-red-600 font-medium flex items-center">
                   <span className="mr-2">📊</span> Dashboard
                 </Link>
-                <Link href="/dashboard/cars" className="text-gray-600 hover:text-red-600 flex items-center">
-                  <span className="mr-2">🚗</span> Cars
-                </Link>
-                <Link href="/dashboard/electronics" className="text-gray-600 hover:text-red-600 flex items-center">
-                  <span className="mr-2">📱</span> Electronics
-                </Link>
-                <Link href="/dashboard/properties" className="text-gray-600 hover:text-red-600 flex items-center">
-                  <span className="mr-2">🏠</span> Properties
-                </Link>
+
+                {isAdmin && (
+                  <Link href="/admin" className="text-gray-600 hover:text-red-600 flex items-center">
+                    <span className="mr-2">🛡️</span> Admin Panel
+                  </Link>
+                )}
+
+                {isSeller && (
+                  <>
+                    <Link href="/seller" className="text-gray-600 hover:text-red-600 flex items-center">
+                      <span className="mr-2">📦</span> Seller Panel
+                    </Link>
+                    <Link href="/dashboard/cars" className="text-gray-600 hover:text-red-600 flex items-center">
+                      <span className="mr-2">🚗</span> Cars
+                    </Link>
+                    <Link href="/dashboard/electronics" className="text-gray-600 hover:text-red-600 flex items-center">
+                      <span className="mr-2">📱</span> Electronics
+                    </Link>
+                    <Link href="/dashboard/properties" className="text-gray-600 hover:text-red-600 flex items-center">
+                      <span className="mr-2">🏠</span> Properties
+                    </Link>
+                  </>
+                )}
+
+                {isBuyer && (
+                  <>
+                    <Link href="/dashboard/cars" className="text-gray-600 hover:text-red-600 flex items-center">
+                      <span className="mr-2">🚗</span> Browse Cars
+                    </Link>
+                    <Link href="/dashboard/electronics" className="text-gray-600 hover:text-red-600 flex items-center">
+                      <span className="mr-2">📱</span> Browse Electronics
+                    </Link>
+                    <Link href="/dashboard/properties" className="text-gray-600 hover:text-red-600 flex items-center">
+                      <span className="mr-2">🏠</span> Browse Properties
+                    </Link>
+                  </>
+                )}
+
                 <Link href="/dashboard/profile" className="text-gray-600 hover:text-red-600 flex items-center">
                   <span className="mr-2">👤</span> Profile
                 </Link>
@@ -145,7 +174,7 @@ export default function DashboardPage() {
                         <div>
                           <label className="block text-sm font-medium text-gray-500 mb-1">Role</label>
                           <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
-                            SELLER
+                            {user?.role?.toUpperCase() || "USER"}
                           </span>
                         </div>
                       </div>
@@ -165,15 +194,26 @@ export default function DashboardPage() {
             <TabsContent value="listings">
               <Card>
                 <CardHeader>
-                  <CardTitle>Your Listings</CardTitle>
+                  <CardTitle>
+                    {isSeller ? "Your Listings" : "Your Favorites"}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-center py-12">
-                    <Tag className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">No listings yet</h3>
-                    <p className="text-gray-500 mb-6">Start selling by creating your first listing</p>
-                    <Button className="bg-red-600 hover:bg-red-700">Create Your First Listing</Button>
-                  </div>
+                  {isSeller ? (
+                    <div className="text-center py-12">
+                      <Tag className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">No listings yet</h3>
+                      <p className="text-gray-500 mb-6">Start selling by creating your first listing</p>
+                      <Button className="bg-red-600 hover:bg-red-700">Create Your First Listing</Button>
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <Tag className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">No favorites yet</h3>
+                      <p className="text-gray-500 mb-6">Start browsing and save items you like</p>
+                      <Button className="bg-red-600 hover:bg-red-700">Browse Marketplace</Button>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>

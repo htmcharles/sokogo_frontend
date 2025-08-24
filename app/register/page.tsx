@@ -6,6 +6,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/AuthContext"
@@ -18,6 +19,7 @@ export default function RegisterPage() {
     phone: "",
     password: "",
     confirmPassword: "",
+    role: "buyer" as "buyer" | "seller" | "admin",
   })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
@@ -28,6 +30,13 @@ export default function RegisterPage() {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
+    })
+  }
+
+  const handleRoleChange = (value: string) => {
+    setFormData({
+      ...formData,
+      role: value as "buyer" | "seller" | "admin",
     })
   }
 
@@ -51,6 +60,7 @@ export default function RegisterPage() {
         email: formData.email,
         phoneNumber: formData.phone,
         password: formData.password,
+        role: formData.role,
       })
 
       console.log("[v0] Registration successful")
@@ -176,6 +186,25 @@ export default function RegisterPage() {
                   required
                   disabled={isLoading}
                 />
+              </div>
+
+              <div>
+                <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-2">
+                  Account Type
+                </label>
+                <Select value={formData.role} onValueChange={handleRoleChange}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select account type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="buyer">Buyer - Browse and purchase items</SelectItem>
+                    <SelectItem value="seller">Seller - List and sell items</SelectItem>
+                    <SelectItem value="admin">Admin - Manage platform (Restricted)</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-gray-500 mt-1">
+                  Choose your account type. Sellers can list products, buyers can purchase them.
+                </p>
               </div>
 
               <div>
