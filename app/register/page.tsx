@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/contexts/AuthContext"
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -17,6 +19,10 @@ export default function RegisterPage() {
     password: "",
     confirmPassword: "",
   })
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
+  const router = useRouter()
+  const { register } = useAuth()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -25,10 +31,51 @@ export default function RegisterPage() {
     })
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle registration logic here
-    console.log("Registration attempt:", formData)
+    setIsLoading(true)
+    setError("")
+
+    // Validate password confirmation
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match")
+      setIsLoading(false)
+      return
+    }
+
+    try {
+      console.log("[v0] Starting registration process")
+      await register({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phoneNumber: formData.phone,
+        password: formData.password,
+      })
+
+      console.log("[v0] Registration successful")
+
+      // Redirect to login page after successful registration
+      router.push("/login?message=Registration successful! Please sign in.")
+    } catch (err) {
+      console.error("[v0] Registration error:", err)
+      let errorMessage = "Registration failed"
+
+      if (err instanceof Error) {
+        if (err.message.includes("Cannot connect to server")) {
+          errorMessage = "Cannot connect to server. Please check if the backend server is running on port 8000."
+        } else if (err.message.includes("Failed to fetch")) {
+          errorMessage =
+            "Network error. Please check your internet connection and ensure the backend server is running."
+        } else {
+          errorMessage = err.message
+        }
+      }
+
+      setError(errorMessage)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -49,6 +96,22 @@ export default function RegisterPage() {
             <CardDescription>Create your account to start buying and selling</CardDescription>
           </CardHeader>
           <CardContent>
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                <p className="text-sm text-red-600">{error}</p>
+                {error.includes("backend server") && (
+                  <div className="mt-2 text-xs text-gray-600">
+                    <p>To fix this:</p>
+                    <ul className="list-disc list-inside mt-1">
+                      <li>Make sure your Node.js backend server is running</li>
+                      <li>Check that it's listening on port 8000</li>
+                      <li>Ensure CORS is configured to allow requests from this domain</li>
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -63,6 +126,7 @@ export default function RegisterPage() {
                     onChange={handleChange}
                     placeholder="First name"
                     required
+                    disabled={isLoading}
                   />
                 </div>
                 <div>
@@ -77,6 +141,7 @@ export default function RegisterPage() {
                     onChange={handleChange}
                     placeholder="Last name"
                     required
+                    disabled={isLoading}
                   />
                 </div>
               </div>
@@ -93,6 +158,7 @@ export default function RegisterPage() {
                   onChange={handleChange}
                   placeholder="Enter your email"
                   required
+                  disabled={isLoading}
                 />
               </div>
 
@@ -108,6 +174,7 @@ export default function RegisterPage() {
                   onChange={handleChange}
                   placeholder="Enter your phone number"
                   required
+                  disabled={isLoading}
                 />
               </div>
 
@@ -123,6 +190,7 @@ export default function RegisterPage() {
                   onChange={handleChange}
                   placeholder="Create a password"
                   required
+                  disabled={isLoading}
                 />
               </div>
 
@@ -138,6 +206,7 @@ export default function RegisterPage() {
                   onChange={handleChange}
                   placeholder="Confirm your password"
                   required
+                  disabled={isLoading}
                 />
               </div>
 
@@ -161,8 +230,8 @@ export default function RegisterPage() {
                 </label>
               </div>
 
-              <Button type="submit" className="w-full bg-red-600 hover:bg-red-700 text-white">
-                Create account
+              <Button type="submit" className="w-full bg-red-600 hover:bg-red-700 text-white" disabled={isLoading}>
+                {isLoading ? "Creating account..." : "Create account"}
               </Button>
             </form>
 

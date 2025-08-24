@@ -7,15 +7,34 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/contexts/AuthContext"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
+  const router = useRouter()
+  const { login } = useAuth()
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle login logic here
-    console.log("Login attempt:", { email, password })
+    setIsLoading(true)
+    setError("")
+
+    try {
+      await login(email, password)
+      console.log("Login successful")
+
+      // Redirect to homepage after successful login
+      router.push("/")
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Login failed")
+      console.error("Login error:", err)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -36,6 +55,12 @@ export default function LoginPage() {
             <CardDescription>Enter your credentials to access your account</CardDescription>
           </CardHeader>
           <CardContent>
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                <p className="text-sm text-red-600">{error}</p>
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
@@ -49,6 +74,7 @@ export default function LoginPage() {
                   placeholder="Enter your email"
                   required
                   className="w-full"
+                  disabled={isLoading}
                 />
               </div>
 
@@ -64,6 +90,7 @@ export default function LoginPage() {
                   placeholder="Enter your password"
                   required
                   className="w-full"
+                  disabled={isLoading}
                 />
               </div>
 
@@ -87,8 +114,8 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              <Button type="submit" className="w-full bg-red-600 hover:bg-red-700 text-white">
-                Sign in
+              <Button type="submit" className="w-full bg-red-600 hover:bg-red-700 text-white" disabled={isLoading}>
+                {isLoading ? "Signing in..." : "Sign in"}
               </Button>
             </form>
 
