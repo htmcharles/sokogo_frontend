@@ -48,22 +48,16 @@ export default function Home() {
         // Fetch popular items for each category
         const [carsResponse, propertiesResponse, electronicsResponse] = await Promise.all([
           apiClient.getPopularItems("MOTORS").catch((error) => {
-            console.error("[v0] Error fetching motors:", error)
             return { items: [] }
           }),
           apiClient.getPopularItems("PROPERTY").catch((error) => {
-            console.error("[v0] Error fetching property:", error)
             return { items: [] }
           }),
           apiClient.getPopularItems("ELECTRONICS").catch((error) => {
-            console.error("[v0] Error fetching electronics:", error)
             return { items: [] }
           }),
         ])
 
-        console.log("[v0] Cars response:", carsResponse)
-        console.log("[v0] Properties response:", propertiesResponse)
-        console.log("[v0] Electronics response:", electronicsResponse)
 
         setCarsData(carsResponse.items.slice(0, 4)) // Show only first 4 items
         setPropertiesData(propertiesResponse.items.slice(0, 4))
