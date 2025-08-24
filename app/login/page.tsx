@@ -2,12 +2,12 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useAuth } from "@/contexts/AuthContext"
 
 export default function LoginPage() {
@@ -15,8 +15,18 @@ export default function LoginPage() {
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+  const [successMessage, setSuccessMessage] = useState("")
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { login } = useAuth()
+
+  // Check for success message from registration
+  useEffect(() => {
+    const message = searchParams.get("message")
+    if (message) {
+      setSuccessMessage(message)
+    }
+  }, [searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -27,8 +37,8 @@ export default function LoginPage() {
       await login(email, password)
       console.log("Login successful")
 
-      // Redirect to homepage after successful login
-      router.push("/")
+      // Redirect to dashboard after successful login
+      router.push("/dashboard")
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed")
       console.error("Login error:", err)
@@ -58,6 +68,12 @@ export default function LoginPage() {
             {error && (
               <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
                 <p className="text-sm text-red-600">{error}</p>
+              </div>
+            )}
+
+            {successMessage && (
+              <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
+                <p className="text-sm text-green-600">{successMessage}</p>
               </div>
             )}
 
