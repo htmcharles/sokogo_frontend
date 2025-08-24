@@ -6,12 +6,23 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { User, Mail, Phone, MapPin, Tag, Edit } from "lucide-react"
 
 export default function DashboardPage() {
   const { user, logout, isAdmin, isSeller, isBuyer } = useAuth()
   const [activeTab, setActiveTab] = useState("information")
+  const router = useRouter()
+
+  // Redirect admin and seller users to their specific dashboards
+  useEffect(() => {
+    if (isAdmin) {
+      router.push('/admin')
+    } else if (isSeller) {
+      router.push('/seller')
+    }
+  }, [isAdmin, isSeller, router])
 
   const handleLogout = () => {
     logout()
@@ -42,20 +53,9 @@ export default function DashboardPage() {
                 )}
 
                 {isSeller && (
-                  <>
-                    <Link href="/seller" className="text-gray-600 hover:text-red-600 flex items-center">
-                      <span className="mr-2">📦</span> Seller Panel
-                    </Link>
-                    <Link href="/dashboard/cars" className="text-gray-600 hover:text-red-600 flex items-center">
-                      <span className="mr-2">🚗</span> Cars
-                    </Link>
-                    <Link href="/dashboard/electronics" className="text-gray-600 hover:text-red-600 flex items-center">
-                      <span className="mr-2">📱</span> Electronics
-                    </Link>
-                    <Link href="/dashboard/properties" className="text-gray-600 hover:text-red-600 flex items-center">
-                      <span className="mr-2">🏠</span> Properties
-                    </Link>
-                  </>
+                  <Link href="/seller" className="text-gray-600 hover:text-red-600 flex items-center">
+                    <span className="mr-2">📦</span> Seller Panel
+                  </Link>
                 )}
 
                 {isBuyer && (
@@ -88,10 +88,10 @@ export default function DashboardPage() {
           </div>
         </header>
 
-        <div className="bg-red-600 text-white py-16">
+        <div className="bg-black text-white py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h1 className="text-4xl font-bold mb-4">Welcome, {user?.firstName?.toUpperCase() || "USER"}!</h1>
-            <p className="text-xl text-red-100">Manage your listings, orders, and marketplace activity</p>
+            <p className="text-xl text-gray-300">Manage your listings, orders, and marketplace activity</p>
           </div>
         </div>
 

@@ -277,41 +277,105 @@ export default function BookingPage() {
 
               {/* Item Specifications */}
               <div className="bg-white rounded-lg p-6">
-              <div className="grid grid-cols-2 gap-6">
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500">Brand & Model</h3>
-                  <p className="text-lg font-semibold text-gray-900">
-                    {item.features?.brand || "N/A"} {item.features?.model || "N/A"}
-                  </p>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Item Specifications</h3>
+
+                {/* Common Specifications */}
+                <div className="grid grid-cols-2 gap-6 mb-6">
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500">Category</h3>
+                    <p className="text-lg font-semibold text-gray-900">{item.category || "N/A"}</p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500">Subcategory</h3>
+                    <p className="text-lg font-semibold text-gray-900">{item.subcategory || "N/A"}</p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500">Price</h3>
+                    <p className="text-lg font-semibold text-gray-900">
+                      {item.currency || "Frw"} {item.price ? item.price.toLocaleString() : "N/A"}
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500">Status</h3>
+                    <p className="text-lg font-semibold text-gray-900">{item.status || "N/A"}</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500">Price</h3>
-                  <p className="text-lg font-semibold text-gray-900">
-                    {item.currency || "Frw"} {item.price ? item.price.toLocaleString() : "N/A"}
-                  </p>
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500">Year</h3>
-                  <p className="text-lg font-semibold text-gray-900">
-                    {item.features?.year ? item.features.year.toString() : "N/A"}
-                  </p>
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500">Mileage</h3>
-                  <p className="text-lg font-semibold text-gray-900">
-                    {item.features?.mileage ? item.features.mileage.toLocaleString() : "N/A"} km
-                  </p>
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500">Fuel Type</h3>
-                  <p className="text-lg font-semibold text-gray-900">{item.features?.fuelType || "N/A"}</p>
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500">Transmission</h3>
-                  <p className="text-lg font-semibold text-gray-900">{item.features?.transmission || "N/A"}</p>
-                </div>
+
+                {/* Category-specific Specifications */}
+                {item.category === "MOTORS" && (
+                  <div className="border-t pt-4">
+                    <h4 className="text-md font-semibold text-gray-800 mb-3">Vehicle Details</h4>
+                    <div className="grid grid-cols-2 gap-6">
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-500">Brand & Model</h3>
+                        <p className="text-lg font-semibold text-gray-900">
+                          {item.features?.brand || "N/A"} {item.features?.model || "N/A"}
+                        </p>
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-500">Year</h3>
+                        <p className="text-lg font-semibold text-gray-900">
+                          {item.features?.year ? item.features.year.toString() : "N/A"}
+                        </p>
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-500">Mileage</h3>
+                        <p className="text-lg font-semibold text-gray-900">
+                          {item.features?.mileage ? item.features.mileage.toLocaleString() : "N/A"} km
+                        </p>
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-500">Fuel Type</h3>
+                        <p className="text-lg font-semibold text-gray-900">{item.features?.fuelType || "N/A"}</p>
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-500">Transmission</h3>
+                        <p className="text-lg font-semibold text-gray-900">{item.features?.transmission || "N/A"}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {item.category === "PROPERTY" && (
+                  <div className="border-t pt-4">
+                    <h4 className="text-md font-semibold text-gray-800 mb-3">Property Details</h4>
+                    <div className="grid grid-cols-2 gap-6">
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-500">Bedrooms</h3>
+                        <p className="text-lg font-semibold text-gray-900">{item.features?.bedrooms || "N/A"}</p>
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-500">Bathrooms</h3>
+                        <p className="text-lg font-semibold text-gray-900">{item.features?.bathrooms || "N/A"}</p>
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-500">Area</h3>
+                        <p className="text-lg font-semibold text-gray-900">
+                          {item.features?.area || "N/A"} {item.features?.areaUnit || ""}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {item.category === "ELECTRONICS" && (
+                  <div className="border-t pt-4">
+                    <h4 className="text-md font-semibold text-gray-800 mb-3">Electronics Details</h4>
+                    <div className="grid grid-cols-2 gap-6">
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-500">Condition</h3>
+                        <p className="text-lg font-semibold text-gray-900">{item.features?.condition || "N/A"}</p>
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-500">Warranty</h3>
+                        <p className="text-lg font-semibold text-gray-900">
+                          {item.features?.warranty ? "Yes" : "No"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
 
             {/* Location & Contact */}
             <div className="bg-white rounded-lg p-6">
