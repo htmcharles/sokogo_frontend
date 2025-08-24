@@ -17,8 +17,8 @@ export default function DescriptionIndexPage() {
     return () => clearTimeout(timer)
   }, [router])
 
-  return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
       <div className="text-center max-w-md mx-auto px-4">
         <div className="text-6xl mb-6">🚫</div>
         <h1 className="text-2xl font-bold text-gray-900 mb-4">No Item Selected</h1>

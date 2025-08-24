@@ -8,6 +8,7 @@ export interface User {
   lastName: string
   email: string
   phoneNumber: string
+  role: 'buyer' | 'seller' | 'admin'
 }
 
 export interface LoginResponse {
@@ -145,6 +146,7 @@ class ApiClient {
     email: string
     phoneNumber: string
     password: string
+    role: 'buyer' | 'seller' | 'admin'
   }): Promise<RegisterResponse> {
     console.log("[v0] Attempting registration with data:", { ...userData, password: "[HIDDEN]" })
     return this.request<RegisterResponse>("/auth/register", {
@@ -169,11 +171,39 @@ class ApiClient {
   async createItem(itemData: {
     title: string
     description: string
+    category: "MOTORS" | "PROPERTY" | "ELECTRONICS"
+    subcategory: string
     price: number
-    category: string
+    currency: string
+    location: {
+      district: string
+      city: string
+      address: string
+    }
     images: string[]
-    location: string
-    condition: string
+    features: {
+      // For motors
+      brand?: string
+      model?: string
+      year?: number
+      mileage?: number
+      fuelType?: string
+      transmission?: string
+
+      // For property
+      bedrooms?: number
+      bathrooms?: number
+      area?: number
+      areaUnit?: string
+
+      // For electronics
+      condition?: string
+      warranty?: boolean
+    }
+    contactInfo: {
+      phone: string
+      email: string
+    }
   }): Promise<{ message: string; item: Item }> {
     return this.request<{ message: string; item: Item }>("/items", {
       method: "POST",
@@ -183,6 +213,29 @@ class ApiClient {
 
   async getMyItems(): Promise<{ items: Item[] }> {
     return this.request<{ items: Item[] }>("/items/seller/my-items")
+  }
+
+  // Admin methods
+  async getUsersByRole(role: string, page: number = 1): Promise<{
+    message: string
+    users: User[]
+    pagination: {
+      currentPage: number
+      totalPages: number
+      totalUsers: number
+      usersPerPage: number
+    }
+  }> {
+    return this.request<{
+      message: string
+      users: User[]
+      pagination: {
+        currentPage: number
+        totalPages: number
+        totalUsers: number
+        usersPerPage: number
+      }
+    }>(`/auth/users?role=${role}&page=${page}`)
   }
 
   // Utility methods
