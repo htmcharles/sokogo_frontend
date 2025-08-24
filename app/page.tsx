@@ -282,7 +282,7 @@ export default function Home() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search for anything"
-                className="w-full h-12 pl-4 pr-12 rounded-full border-0 text-gray-800"
+                className="w-full h-12 pl-4 pr-12 rounded-full border-0 text-white"
               />
               <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             </div>
