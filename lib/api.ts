@@ -30,14 +30,30 @@ export interface Item {
   title: string
   description: string
   price: number
+  currency?: string
   category: string
+  subcategory?: string
   seller: string | User
   images: string[]
+  status?: string
   location: {
     district?: string
     city?: string
     address?: string
   }
+  features?: {
+    brand?: string
+    model?: string
+    year?: number
+    mileage?: number
+    fuelType?: string
+    transmission?: string
+  }
+  contactInfo?: {
+    phone?: string
+    email?: string
+  }
+  bookingUrl?: string
   condition: string
   createdAt: string
   updatedAt: string

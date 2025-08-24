@@ -163,7 +163,7 @@ export default function PropertiesPage() {
                       </div>
                       <div className="flex space-x-2">
                         {(property.status || "AVAILABLE") === "AVAILABLE" || (property.status || "ACTIVE") === "ACTIVE" ? (
-                          <Link href={`/dashboard/properties/${property._id}/book`}>
+                          <Link href={`/description/${property._id}`}>
                             <Button className="bg-red-600 hover:bg-red-700">Book Now</Button>
                           </Link>
                         ) : (
