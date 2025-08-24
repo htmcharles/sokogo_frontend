@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import {
   Search,
@@ -19,9 +19,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { carsData } from "@/data/cars"
-import { propertiesData } from "@/data/properties"
-import { electronicsData } from "@/data/electronics"
+import { apiClient, type Item } from "@/lib/api"
 import Link from "next/link"
 
 export default function Home() {
@@ -33,7 +31,51 @@ export default function Home() {
     message: "",
   })
   const [newsletterEmail, setNewsletterEmail] = useState("")
+  const [carsData, setCarsData] = useState<Item[]>([])
+  const [propertiesData, setPropertiesData] = useState<Item[]>([])
+  const [electronicsData, setElectronicsData] = useState<Item[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true)
+        console.log("[v0] Starting to fetch data from backend...")
+
+        // Fetch popular items for each category
+        const [carsResponse, propertiesResponse, electronicsResponse] = await Promise.all([
+          apiClient.getPopularItems("MOTORS").catch((error) => {
+            console.error("[v0] Error fetching motors:", error)
+            return { items: [] }
+          }),
+          apiClient.getPopularItems("PROPERTY").catch((error) => {
+            console.error("[v0] Error fetching property:", error)
+            return { items: [] }
+          }),
+          apiClient.getPopularItems("ELECTRONICS").catch((error) => {
+            console.error("[v0] Error fetching electronics:", error)
+            return { items: [] }
+          }),
+        ])
+
+        console.log("[v0] Cars response:", carsResponse)
+        console.log("[v0] Properties response:", propertiesResponse)
+        console.log("[v0] Electronics response:", electronicsResponse)
+
+        setCarsData(carsResponse.items.slice(0, 4)) // Show only first 4 items
+        setPropertiesData(propertiesResponse.items.slice(0, 4))
+        setElectronicsData(electronicsResponse.items.slice(0, 4))
+      } catch (error) {
+        console.error("Error fetching data:", error)
+        // Keep empty arrays as fallback
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -60,6 +102,10 @@ export default function Home() {
     console.log("Newsletter subscription:", newsletterEmail)
     setNewsletterEmail("")
     alert("Successfully subscribed to newsletter!")
+  }
+
+  const formatPrice = (price: number) => {
+    return `Frw ${price.toLocaleString()}`
   }
 
   return (
@@ -213,29 +259,44 @@ export default function Home() {
           Popular in <span className="text-red-600">CARS</span>
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {carsData.map((car) => (
-            <div
-              key={car.id}
-              className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
-            >
-              <img
-                src={car.image || "/placeholder.svg"}
-                alt={`${car.brand} ${car.model}`}
-                className="w-full h-48 object-cover"
-              />
-              <div className="p-4">
-                <p className="text-red-600 font-bold text-lg mb-1">{car.price}</p>
-                <h3 className="font-semibold text-gray-800 mb-2">
-                  {car.brand} • {car.model} • {car.variant}
-                </h3>
-                <p className="text-gray-600 text-sm">
-                  {car.year} • {car.mileage}
-                </p>
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="bg-gray-200 rounded-lg h-64 animate-pulse"></div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {carsData.length > 0 ? (
+              carsData.map((car) => (
+                <div
+                  key={car._id}
+                  className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+                >
+                  <img
+                    src={car.images[0] || "/placeholder.svg?height=200&width=300&query=car"}
+                    alt={car.title}
+                    className="w-full h-48 object-cover"
+                  />
+                  <div className="p-4">
+                    <p className="text-red-600 font-bold text-lg mb-1">{formatPrice(car.price)}</p>
+                    <h3 className="font-semibold text-gray-800 mb-2">{car.title}</h3>
+                    <p className="text-gray-600 text-sm">
+                      {car.location?.city && car.location?.district
+                        ? `${car.location.city}, ${car.location.district}`
+                        : car.location?.city || car.location?.district || 'Location not specified'
+                      }
+                    </p>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="col-span-full text-center py-8">
+                <p className="text-gray-500">No cars available at the moment</p>
               </div>
-            </div>
-          ))}
-        </div>
+            )}
+          </div>
+        )}
       </section>
 
       {/* Popular in PROPERTY Section */}
@@ -244,23 +305,44 @@ export default function Home() {
           Popular in <span className="text-red-600">PROPERTY</span>
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {propertiesData.map((property) => (
-            <div
-              key={property.id}
-              className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
-            >
-              <img src={property.image || "/placeholder.svg"} alt="Modern House" className="w-full h-48 object-cover" />
-              <div className="p-4">
-                <p className="text-red-600 font-bold text-lg mb-1">{property.price}</p>
-                <p className="text-gray-800 font-medium mb-2">
-                  {property.beds} beds • {property.baths} baths • {property.area}
-                </p>
-                <p className="text-gray-600 text-sm">{property.location}</p>
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="bg-gray-200 rounded-lg h-64 animate-pulse"></div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {propertiesData.length > 0 ? (
+              propertiesData.map((property) => (
+                <div
+                  key={property._id}
+                  className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+                >
+                  <img
+                    src={property.images[0] || "/placeholder.svg?height=200&width=300&query=modern house"}
+                    alt={property.title}
+                    className="w-full h-48 object-cover"
+                  />
+                  <div className="p-4">
+                    <p className="text-red-600 font-bold text-lg mb-1">{formatPrice(property.price)}</p>
+                    <h3 className="font-semibold text-gray-800 mb-2">{property.title}</h3>
+                    <p className="text-gray-600 text-sm">
+                      {property.location?.city && property.location?.district
+                        ? `${property.location.city}, ${property.location.district}`
+                        : property.location?.city || property.location?.district || 'Location not specified'
+                      }
+                    </p>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="col-span-full text-center py-8">
+                <p className="text-gray-500">No properties available at the moment</p>
               </div>
-            </div>
-          ))}
-        </div>
+            )}
+          </div>
+        )}
       </section>
 
       {/* Popular in ELECTRONICS Section */}
@@ -269,27 +351,39 @@ export default function Home() {
           Popular in <span className="text-red-600">ELECTRONICS</span>
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {electronicsData.map((item) => (
-            <div
-              key={item.id}
-              className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
-            >
-              <img
-                src={item.image || "/placeholder.svg"}
-                alt={`${item.brand} ${item.model}`}
-                className="w-full h-48 object-cover"
-              />
-              <div className="p-4">
-                <p className="text-red-600 font-bold text-lg mb-1">{item.price}</p>
-                <h3 className="font-semibold text-gray-800 mb-2">
-                  {item.brand} • {item.model} • {item.specs}
-                </h3>
-                <p className="text-gray-600 text-sm">{item.condition}</p>
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="bg-gray-200 rounded-lg h-64 animate-pulse"></div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {electronicsData.length > 0 ? (
+              electronicsData.map((item) => (
+                <div
+                  key={item._id}
+                  className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+                >
+                  <img
+                    src={item.images[0] || "/placeholder.svg?height=200&width=300&query=electronics"}
+                    alt={item.title}
+                    className="w-full h-48 object-cover"
+                  />
+                  <div className="p-4">
+                    <p className="text-red-600 font-bold text-lg mb-1">{formatPrice(item.price)}</p>
+                    <h3 className="font-semibold text-gray-800 mb-2">{item.title}</h3>
+                    <p className="text-gray-600 text-sm">{item.condition}</p>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="col-span-full text-center py-8">
+                <p className="text-gray-500">No electronics available at the moment</p>
               </div>
-            </div>
-          ))}
-        </div>
+            )}
+          </div>
+        )}
       </section>
 
       {/* Why Choose Us Section */}

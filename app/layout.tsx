@@ -1,12 +1,24 @@
-import type { Metadata } from 'next'
-import { GeistSans } from 'geist/font/sans'
-import { GeistMono } from 'geist/font/mono'
-import './globals.css'
+import type React from "react"
+import type { Metadata } from "next"
+import { Geist, Geist_Mono } from "next/font/google"
+import "./globals.css"
+import { AuthProvider } from "@/contexts/AuthContext"
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+})
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+})
 
 export const metadata: Metadata = {
-  title: 'sokogo',
-  description: 'sokogo',
-  generator: 'sokogo.app',
+  title: "SOKOGO - Buy & Sell Cars, Property & Electronics in Rwanda",
+  description:
+    "Rwanda's premier marketplace for cars, property, and electronics. Buy and sell with confidence on SOKOGO.",
+    generator: 'v0.app'
 }
 
 export default function RootLayout({
@@ -16,16 +28,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
-        <style>{`
-html {
-  font-family: ${GeistSans.style.fontFamily};
-  --font-sans: ${GeistSans.variable};
-  --font-mono: ${GeistMono.variable};
-}
-        `}</style>
-      </head>
-      <body>{children}</body>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <AuthProvider>{children}</AuthProvider>
+      </body>
     </html>
   )
 }
