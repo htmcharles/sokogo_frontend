@@ -52,6 +52,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const response = await apiClient.login(email, password)
       setUser(response.user)
+
+      // Automatic role-based redirects
+      if (typeof window !== "undefined") {
+        if (response.user.role === 'admin') {
+          window.location.href = '/admin'
+        } else if (response.user.role === 'seller') {
+          window.location.href = '/seller'
+        } else {
+          // Default redirect for buyers
+          window.location.href = '/dashboard'
+        }
+      }
     } catch (error) {
       throw error
     }

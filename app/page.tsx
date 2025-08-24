@@ -135,9 +135,19 @@ export default function Home() {
               </Link>
               {isAuthenticated ? (
                 <>
-                  <Link href="/dashboard" className="text-gray-700 hover:text-gray-900">
-                    DASHBOARD
-                  </Link>
+                  {user?.role === 'admin' ? (
+                    <Link href="/admin" className="text-gray-700 hover:text-gray-900">
+                      ADMIN PANEL
+                    </Link>
+                  ) : user?.role === 'seller' ? (
+                    <Link href="/seller" className="text-gray-700 hover:text-gray-900">
+                      SELLER PANEL
+                    </Link>
+                  ) : (
+                    <Link href="/dashboard" className="text-gray-700 hover:text-gray-900">
+                      DASHBOARD
+                    </Link>
+                  )}
                   <span className="text-gray-700">Welcome, {user?.firstName}</span>
                 </>
               ) : (
@@ -154,7 +164,19 @@ export default function Home() {
 
             {/* CTA Button */}
             <Button
-              onClick={() => isAuthenticated ? router.push('/dashboard') : router.push('/login')}
+              onClick={() => {
+                if (isAuthenticated) {
+                  if (user?.role === 'admin') {
+                    router.push('/admin')
+                  } else if (user?.role === 'seller') {
+                    router.push('/seller')
+                  } else {
+                    router.push('/dashboard')
+                  }
+                } else {
+                  router.push('/login')
+                }
+              }}
               className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-full"
             >
               PLACE YOUR AD

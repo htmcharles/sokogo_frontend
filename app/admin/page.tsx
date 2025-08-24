@@ -100,7 +100,7 @@ export default function AdminDashboard() {
 
   return (
     <RoleProtectedRoute allowedRoles={["admin"]}>
-            <div className="min-h-screen bg-white">
+            <div className="min-h-screen bg-gray-50">
         {/* Header */}
         <header className="bg-white border-b border-gray-200">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -123,64 +123,64 @@ export default function AdminDashboard() {
         </header>
 
         {/* Welcome Banner */}
-        <div className="bg-red-600 text-white py-16">
+        <div className="bg-black text-white py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h1 className="text-4xl font-bold mb-4">Admin Control Panel</h1>
-            <p className="text-xl text-red-100">Manage sellers, monitor platform activity, and oversee marketplace operations</p>
+            <p className="text-xl text-gray-300">Manage sellers, monitor platform activity, and oversee marketplace operations</p>
           </div>
         </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card className="border-gray-200">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-700">Total Sellers</CardTitle>
-              <Users className="h-4 w-4 text-red-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-gray-900">{totalUsers}</div>
-              <p className="text-xs text-gray-500">Total sellers in the system</p>
-            </CardContent>
-          </Card>
-
-          <Card className="border-gray-200">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-700">Total Products</CardTitle>
-              <Package className="h-4 w-4 text-red-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-gray-900">0</div>
-              <p className="text-xs text-gray-500">Products across all categories</p>
-            </CardContent>
-          </Card>
-
-          <Card className="border-gray-200">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-700">System Status</CardTitle>
-              <Settings className="h-4 w-4 text-red-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">Active</div>
-              <p className="text-xs text-gray-500">All systems operational</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Sellers List */}
-          <div className="lg:col-span-2">
-            <Card className="border-gray-200">
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <CardTitle className="text-gray-900">Manage Sellers</CardTitle>
-                  <Button onClick={() => setShowRegisterForm(true)} className="bg-red-600 hover:bg-red-700">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Seller
-                  </Button>
-                </div>
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <Card className="bg-white border-gray-200">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-gray-700">Total Sellers</CardTitle>
+                <Users className="h-4 w-4 text-red-600" />
               </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-gray-900">{totalUsers}</div>
+                <p className="text-xs text-gray-500">Total sellers in the system</p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white border-gray-200">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-gray-700">Total Products</CardTitle>
+                <Package className="h-4 w-4 text-red-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-gray-900">0</div>
+                <p className="text-xs text-gray-500">Products across all categories</p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white border-gray-200">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-gray-700">System Status</CardTitle>
+                <Settings className="h-4 w-4 text-red-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-green-600">Active</div>
+                <p className="text-xs text-gray-500">All systems operational</p>
+              </CardContent>
+            </Card>
+          </div>
+
+                  {/* Main Content */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Sellers List */}
+            <div className="lg:col-span-2">
+              <Card className="bg-white border-gray-200">
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <CardTitle className="text-gray-900">Manage Sellers</CardTitle>
+                    <Button onClick={() => setShowRegisterForm(true)} className="bg-red-600 hover:bg-red-700">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Seller
+                    </Button>
+                  </div>
+                </CardHeader>
               <CardContent>
                 {error && (
                   <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
@@ -269,9 +269,9 @@ export default function AdminDashboard() {
 
           {/* Quick Actions */}
           <div className="space-y-6">
-            <Card>
+            <Card className="bg-white border-gray-200">
               <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
+                <CardTitle className="text-gray-900">Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <Button variant="outline" className="w-full justify-start">
@@ -289,9 +289,9 @@ export default function AdminDashboard() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-white border-gray-200">
               <CardHeader>
-                <CardTitle>Recent Activity</CardTitle>
+                <CardTitle className="text-gray-900">Recent Activity</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3 text-sm">
@@ -334,7 +334,7 @@ export default function AdminDashboard() {
       {showRegisterForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4">Register New Seller</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Register New Seller</h2>
             <form onSubmit={handleRegisterSeller} className="space-y-4">
               {registerError && (
                 <div className="p-3 bg-red-50 border border-red-200 rounded-md">

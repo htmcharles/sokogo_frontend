@@ -24,6 +24,7 @@ export default function SellerDashboard() {
   const [isCreatingProduct, setIsCreatingProduct] = useState(false)
   const [createError, setCreateError] = useState<string | null>(null)
   const [createSuccess, setCreateSuccess] = useState(false)
+  const [formCategory, setFormCategory] = useState<string>("")
 
 
 
@@ -80,6 +81,7 @@ export default function SellerDashboard() {
     setCreateError(null)
     setCreateSuccess(false)
     setIsCreatingProduct(false)
+    setFormCategory("")
   }
 
   const handleCreateProduct = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -159,7 +161,7 @@ export default function SellerDashboard() {
 
   return (
     <RoleProtectedRoute allowedRoles={["seller"]}>
-            <div className="min-h-screen bg-white">
+            <div className="min-h-screen bg-gray-50">
         {/* Header */}
         <header className="bg-white border-b border-gray-200">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -182,17 +184,17 @@ export default function SellerDashboard() {
         </header>
 
         {/* Welcome Banner */}
-        <div className="bg-red-600 text-white py-16">
+        <div className="bg-black text-white py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h1 className="text-4xl font-bold mb-4">Seller Control Panel</h1>
-            <p className="text-xl text-red-100">Manage your products, track sales, and grow your business</p>
+            <p className="text-xl text-gray-300">Manage your products, track sales, and grow your business</p>
           </div>
         </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card className="border-gray-200">
+          <Card className="bg-white border-gray-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-gray-700">Total Products</CardTitle>
               <Package className="h-4 w-4 text-red-600" />
@@ -203,7 +205,7 @@ export default function SellerDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="border-gray-200">
+          <Card className="bg-white border-gray-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-gray-700">Active Listings</CardTitle>
               <TrendingUp className="h-4 w-4 text-red-600" />
@@ -216,7 +218,7 @@ export default function SellerDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="border-gray-200">
+          <Card className="bg-white border-gray-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-gray-700">Total Value</CardTitle>
               <DollarSign className="h-4 w-4 text-red-600" />
@@ -270,7 +272,7 @@ export default function SellerDashboard() {
             </div>
           ) : (
             filteredProducts.map((product) => (
-              <Card key={product._id} className="overflow-hidden">
+              <Card key={product._id} className="bg-white border-gray-200 overflow-hidden">
                 <div className="h-48 bg-gray-200 flex items-center justify-center">
                   {product.images && product.images.length > 0 ? (
                     <img
@@ -317,7 +319,7 @@ export default function SellerDashboard() {
       {showAddForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-bold mb-4">Add New Product</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Add New Product</h2>
             <form onSubmit={handleCreateProduct} className="space-y-4">
               {createError && (
                 <div className="p-3 bg-red-50 border border-red-200 rounded-md">
@@ -333,7 +335,13 @@ export default function SellerDashboard() {
                 </div>
                 <div>
                   <Label htmlFor="category">Category *</Label>
-                  <Select name="category" required disabled={isCreatingProduct}>
+                  <Select
+                    name="category"
+                    required
+                    disabled={isCreatingProduct}
+                    value={formCategory}
+                    onValueChange={setFormCategory}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
@@ -398,72 +406,86 @@ export default function SellerDashboard() {
                 <h3 className="text-lg font-semibold mb-4">Category Features</h3>
 
                 {/* Motors Features */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <Label htmlFor="brand">Brand</Label>
-                    <Input id="brand" name="brand" placeholder="e.g., Toyota" disabled={isCreatingProduct} />
+                {formCategory === "MOTORS" && (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <Label htmlFor="brand">Brand *</Label>
+                      <Input id="brand" name="brand" placeholder="e.g., Toyota" required disabled={isCreatingProduct} />
+                    </div>
+                    <div>
+                      <Label htmlFor="model">Model *</Label>
+                      <Input id="model" name="model" placeholder="e.g., Land Cruiser" required disabled={isCreatingProduct} />
+                    </div>
+                    <div>
+                      <Label htmlFor="year">Year *</Label>
+                      <Input id="year" name="year" type="number" placeholder="e.g., 2020" required disabled={isCreatingProduct} />
+                    </div>
+                    <div>
+                      <Label htmlFor="mileage">Mileage (km) *</Label>
+                      <Input id="mileage" name="mileage" type="number" placeholder="e.g., 25000" required disabled={isCreatingProduct} />
+                    </div>
+                    <div>
+                      <Label htmlFor="fuelType">Fuel Type *</Label>
+                      <Input id="fuelType" name="fuelType" placeholder="e.g., Diesel" required disabled={isCreatingProduct} />
+                    </div>
+                    <div>
+                      <Label htmlFor="transmission">Transmission *</Label>
+                      <Input id="transmission" name="transmission" placeholder="e.g., Automatic" required disabled={isCreatingProduct} />
+                    </div>
                   </div>
-                  <div>
-                    <Label htmlFor="model">Model</Label>
-                    <Input id="model" name="model" placeholder="e.g., Land Cruiser" disabled={isCreatingProduct} />
-                  </div>
-                  <div>
-                    <Label htmlFor="year">Year</Label>
-                    <Input id="year" name="year" type="number" placeholder="e.g., 2020" disabled={isCreatingProduct} />
-                  </div>
-                  <div>
-                    <Label htmlFor="mileage">Mileage (km)</Label>
-                    <Input id="mileage" name="mileage" type="number" placeholder="e.g., 25000" disabled={isCreatingProduct} />
-                  </div>
-                  <div>
-                    <Label htmlFor="fuelType">Fuel Type</Label>
-                    <Input id="fuelType" name="fuelType" placeholder="e.g., Diesel" disabled={isCreatingProduct} />
-                  </div>
-                  <div>
-                    <Label htmlFor="transmission">Transmission</Label>
-                    <Input id="transmission" name="transmission" placeholder="e.g., Automatic" disabled={isCreatingProduct} />
-                  </div>
-                </div>
+                )}
 
                 {/* Property Features */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
-                  <div>
-                    <Label htmlFor="bedrooms">Bedrooms</Label>
-                    <Input id="bedrooms" name="bedrooms" type="number" placeholder="e.g., 3" disabled={isCreatingProduct} />
+                {formCategory === "PROPERTY" && (
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                      <Label htmlFor="bedrooms">Bedrooms *</Label>
+                      <Input id="bedrooms" name="bedrooms" type="number" placeholder="e.g., 3" required disabled={isCreatingProduct} />
+                    </div>
+                    <div>
+                      <Label htmlFor="bathrooms">Bathrooms *</Label>
+                      <Input id="bathrooms" name="bathrooms" type="number" placeholder="e.g., 2" required disabled={isCreatingProduct} />
+                    </div>
+                    <div>
+                      <Label htmlFor="area">Area *</Label>
+                      <Input id="area" name="area" type="number" placeholder="e.g., 150" required disabled={isCreatingProduct} />
+                    </div>
+                    <div>
+                      <Label htmlFor="areaUnit">Area Unit *</Label>
+                      <Input id="areaUnit" name="areaUnit" placeholder="e.g., m²" required disabled={isCreatingProduct} />
+                    </div>
                   </div>
-                  <div>
-                    <Label htmlFor="bathrooms">Bathrooms</Label>
-                    <Input id="bathrooms" name="bathrooms" type="number" placeholder="e.g., 2" disabled={isCreatingProduct} />
-                  </div>
-                  <div>
-                    <Label htmlFor="area">Area</Label>
-                    <Input id="area" name="area" type="number" placeholder="e.g., 150" disabled={isCreatingProduct} />
-                  </div>
-                  <div>
-                    <Label htmlFor="areaUnit">Area Unit</Label>
-                    <Input id="areaUnit" name="areaUnit" placeholder="e.g., m²" disabled={isCreatingProduct} />
-                  </div>
-                </div>
+                )}
 
                 {/* Electronics Features */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                  <div>
-                    <Label htmlFor="condition">Condition</Label>
-                    <Input id="condition" name="condition" placeholder="e.g., Excellent" disabled={isCreatingProduct} />
+                {formCategory === "ELECTRONICS" && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="condition">Condition *</Label>
+                      <Input id="condition" name="condition" placeholder="e.g., Excellent" required disabled={isCreatingProduct} />
+                    </div>
+                    <div>
+                      <Label htmlFor="warranty">Warranty *</Label>
+                      <Select name="warranty" required disabled={isCreatingProduct}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select warranty" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="true">Yes</SelectItem>
+                          <SelectItem value="false">No</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
-                  <div>
-                    <Label htmlFor="warranty">Warranty</Label>
-                    <Select name="warranty" disabled={isCreatingProduct}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select warranty" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="true">Yes</SelectItem>
-                        <SelectItem value="false">No</SelectItem>
-                      </SelectContent>
-                    </Select>
+                )}
+
+                {/* No Category Selected */}
+                {!formCategory && (
+                  <div className="text-center py-8">
+                    <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-600">Please select a category to see relevant features</p>
                   </div>
-                </div>
+                )}
               </div>
 
               {/* Contact Information */}

@@ -43,12 +43,23 @@ export interface Item {
     address?: string
   }
   features?: {
+    // Motors features
     brand?: string
     model?: string
     year?: number
     mileage?: number
     fuelType?: string
     transmission?: string
+
+    // Property features
+    bedrooms?: number
+    bathrooms?: number
+    area?: number
+    areaUnit?: string
+
+    // Electronics features
+    condition?: string
+    warranty?: boolean
   }
   contactInfo?: {
     phone?: string

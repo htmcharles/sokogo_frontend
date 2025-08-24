@@ -91,9 +91,19 @@ export default function SearchPage() {
               </Link>
               {isAuthenticated ? (
                 <>
-                  <Link href="/dashboard" className="text-gray-700 hover:text-gray-900">
-                    DASHBOARD
-                  </Link>
+                  {user?.role === 'admin' ? (
+                    <Link href="/admin" className="text-gray-700 hover:text-gray-900">
+                      ADMIN PANEL
+                    </Link>
+                  ) : user?.role === 'seller' ? (
+                    <Link href="/seller" className="text-gray-700 hover:text-gray-900">
+                      SELLER PANEL
+                    </Link>
+                  ) : (
+                    <Link href="/dashboard" className="text-gray-700 hover:text-gray-900">
+                      DASHBOARD
+                    </Link>
+                  )}
                   <span className="text-gray-700">Welcome, {user?.firstName}</span>
                 </>
               ) : (
@@ -109,7 +119,19 @@ export default function SearchPage() {
             </nav>
 
             <Button
-              onClick={() => isAuthenticated ? window.location.href = '/dashboard' : window.location.href = '/login'}
+              onClick={() => {
+                if (isAuthenticated) {
+                  if (user?.role === 'admin') {
+                    window.location.href = '/admin'
+                  } else if (user?.role === 'seller') {
+                    window.location.href = '/seller'
+                  } else {
+                    window.location.href = '/dashboard'
+                  }
+                } else {
+                  window.location.href = '/login'
+                }
+              }}
               className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-full"
             >
               PLACE YOUR AD
