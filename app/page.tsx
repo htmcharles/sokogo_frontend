@@ -21,6 +21,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { apiClient, type Item } from "@/lib/api"
 import Link from "next/link"
+import { useAuth } from "@/contexts/AuthContext"
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -36,6 +37,7 @@ export default function Home() {
   const [electronicsData, setElectronicsData] = useState<Item[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
+  const { isAuthenticated, user } = useAuth()
 
   useEffect(() => {
     const fetchData = async () => {
@@ -131,16 +133,32 @@ export default function Home() {
               <Link href="/" className="text-gray-700 hover:text-gray-900">
                 HOME
               </Link>
-              <Link href="/login" className="text-gray-700 hover:text-gray-900">
-                LOG IN
-              </Link>
-              <Link href="/register" className="text-gray-700 hover:text-gray-900">
-                REGISTER
-              </Link>
+              {isAuthenticated ? (
+                <>
+                  <Link href="/dashboard" className="text-gray-700 hover:text-gray-900">
+                    DASHBOARD
+                  </Link>
+                  <span className="text-gray-700">Welcome, {user?.firstName}</span>
+                </>
+              ) : (
+                <>
+                  <Link href="/login" className="text-gray-700 hover:text-gray-900">
+                    LOG IN
+                  </Link>
+                  <Link href="/register" className="text-gray-700 hover:text-gray-900">
+                    REGISTER
+                  </Link>
+                </>
+              )}
             </nav>
 
             {/* CTA Button */}
-            <Button className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-full">PLACE YOUR AD</Button>
+            <Button
+              onClick={() => isAuthenticated ? router.push('/dashboard') : router.push('/login')}
+              className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-full"
+            >
+              PLACE YOUR AD
+            </Button>
           </div>
         </div>
       </header>

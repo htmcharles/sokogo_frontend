@@ -72,6 +72,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     apiClient.logout()
     setUser(null)
+    // Redirect to homepage after logout
+    if (typeof window !== "undefined") {
+      window.location.href = "/"
+    }
   }
 
   const value: AuthContextType = {
