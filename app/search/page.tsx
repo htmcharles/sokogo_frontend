@@ -14,7 +14,7 @@ import type { Item } from "@/lib/api"
 export default function SearchPage() {
   const searchParams = useSearchParams()
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "")
-  const [activeCategory, setActiveCategory] = useState(searchParams.get("category") || "all")
+  const [activeCategory, setActiveCategory] = useState(searchParams.get("category") || "MOTORS")
   const [results, setResults] = useState<Item[]>([])
   const { isAuthenticated, user } = useAuth()
 
@@ -24,14 +24,7 @@ export default function SearchPage() {
       try {
         const { items } = await apiClient.getAllItems()
 
-        let filtered = items
-
-        // Filter by category
-        if (activeCategory !== "all") {
-          filtered = filtered.filter(
-            (item) => item.category.toLowerCase() === activeCategory.toLowerCase()
-          )
-        }
+        let filtered = items.filter((item) => item.category === "MOTORS")
 
         // Filter by search query
         if (searchQuery.trim()) {
@@ -135,19 +128,14 @@ export default function SearchPage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-6">
             <div className="flex space-x-4 mb-6">
-              {["all", "MOTORS", "PROPERTY", "ELECTRONICS"].map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setActiveCategory(cat.toLowerCase())}
-                  className={`px-6 py-2 rounded-full font-medium ${
-                    activeCategory.toLowerCase() === cat.toLowerCase()
-                      ? "bg-red-600 text-white"
-                      : "text-gray-700 hover:text-gray-900"
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
+              <button
+                onClick={() => setActiveCategory("MOTORS")}
+                className={`px-6 py-2 rounded-full font-medium ${
+                  activeCategory === "MOTORS" ? "bg-red-600 text-white" : "text-gray-700 hover:text-gray-900"
+                }`}
+              >
+                MOTORS
+              </button>
             </div>
           </div>
 
@@ -202,20 +190,6 @@ export default function SearchPage() {
                   <p className="text-gray-600 text-sm">
                     {item.features?.brand} • {item.features?.model} • {item.features?.year} •{" "}
                     {item.features?.mileage} km
-                  </p>
-                )}
-
-                {item.category === "PROPERTY" && (
-                  <p className="text-gray-600 text-sm">
-                    {item.features?.bedrooms} beds • {item.features?.bathrooms} baths •{" "}
-                    {item.features?.area} {item.features?.areaUnit}
-                  </p>
-                )}
-
-                {item.category === "ELECTRONICS" && (
-                  <p className="text-gray-600 text-sm">
-                    {item.features?.condition}{" "}
-                    {item.features?.warranty ? "• Warranty included" : ""}
                   </p>
                 )}
 

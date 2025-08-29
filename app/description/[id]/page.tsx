@@ -154,18 +154,7 @@ export default function BookingPage() {
               <a href="/dashboard" className="text-red-600 px-3 py-2 text-sm font-medium">
                 📊 Dashboard
               </a>
-              <a
-                href="/dashboard/electronics"
-                className="text-gray-600 hover:text-red-600 px-3 py-2 text-sm font-medium"
-              >
-                📱 Electronics
-              </a>
-              <a
-                href="/dashboard/properties"
-                className="text-gray-600 hover:text-red-600 px-3 py-2 text-sm font-medium"
-              >
-                🏠 Properties
-              </a>
+
               <a href="/dashboard" className="text-gray-600 hover:text-red-600 px-3 py-2 text-sm font-medium">
                 👤 Profile
               </a>
@@ -336,45 +325,7 @@ export default function BookingPage() {
                   </div>
                 )}
 
-                {item.category === "PROPERTY" && (
-                  <div className="border-t pt-4">
-                    <h4 className="text-md font-semibold text-gray-800 mb-3">Property Details</h4>
-                    <div className="grid grid-cols-2 gap-6">
-                      <div>
-                        <h3 className="text-sm font-medium text-gray-500">Bedrooms</h3>
-                        <p className="text-lg font-semibold text-gray-900">{item.features?.bedrooms || "N/A"}</p>
-                      </div>
-                      <div>
-                        <h3 className="text-sm font-medium text-gray-500">Bathrooms</h3>
-                        <p className="text-lg font-semibold text-gray-900">{item.features?.bathrooms || "N/A"}</p>
-                      </div>
-                      <div>
-                        <h3 className="text-sm font-medium text-gray-500">Area</h3>
-                        <p className="text-lg font-semibold text-gray-900">
-                          {item.features?.area || "N/A"} {item.features?.areaUnit || ""}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
 
-                {item.category === "ELECTRONICS" && (
-                  <div className="border-t pt-4">
-                    <h4 className="text-md font-semibold text-gray-800 mb-3">Electronics Details</h4>
-                    <div className="grid grid-cols-2 gap-6">
-                      <div>
-                        <h3 className="text-sm font-medium text-gray-500">Condition</h3>
-                        <p className="text-lg font-semibold text-gray-900">{item.features?.condition || "N/A"}</p>
-                      </div>
-                      <div>
-                        <h3 className="text-sm font-medium text-gray-500">Warranty</h3>
-                        <p className="text-lg font-semibold text-gray-900">
-                          {item.features?.warranty ? "Yes" : "No"}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
               </div>
 
             {/* Location & Contact */}

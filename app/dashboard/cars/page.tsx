@@ -74,12 +74,6 @@ export default function CarsPage() {
                 <Link href="/dashboard/cars" className="text-red-600 font-medium flex items-center">
                   <span className="mr-2">🚗</span> Cars
                 </Link>
-                <Link href="/dashboard/electronics" className="text-gray-600 hover:text-red-600 flex items-center">
-                  <span className="mr-2">📱</span> Electronics
-                </Link>
-                <Link href="/dashboard/properties" className="text-gray-600 hover:text-red-600 flex items-center">
-                  <span className="mr-2">🏠</span> Properties
-                </Link>
                 <Link href="/dashboard/profile" className="text-gray-600 hover:text-red-600 flex items-center">
                   <span className="mr-2">👤</span> Profile
                 </Link>
