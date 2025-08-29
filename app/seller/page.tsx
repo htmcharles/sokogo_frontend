@@ -6,25 +6,19 @@ import { useRouter } from "next/navigation"
 import { RoleProtectedRoute } from "@/components/RoleProtectedRoute"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Plus, Package, TrendingUp, DollarSign, LogOut, Edit, Trash2 } from "lucide-react"
-import { Item, apiClient } from "@/lib/api"
+import { Item } from "@/lib/api"
 
 export default function SellerDashboard() {
   const { user, isSeller, logout } = useAuth()
   const router = useRouter()
   const [products, setProducts] = useState<Item[]>([])
-  const [showAddForm, setShowAddForm] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
-  const [isCreatingProduct, setIsCreatingProduct] = useState(false)
-  const [createError, setCreateError] = useState<string | null>(null)
-  const [createSuccess, setCreateSuccess] = useState(false)
-  const [formCategory, setFormCategory] = useState<string>("")
+
 
 
 
@@ -77,71 +71,7 @@ export default function SellerDashboard() {
     logout()
   }
 
-  const resetFormState = () => {
-    setCreateError(null)
-    setCreateSuccess(false)
-    setIsCreatingProduct(false)
-    setFormCategory("")
-  }
 
-  const handleCreateProduct = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setIsCreatingProduct(true)
-    setCreateError(null)
-    setCreateSuccess(false)
-
-    const formData = new FormData(e.currentTarget)
-    const category = formData.get('category') as "MOTORS"
-
-    // Build features object based on category
-    let features: any = {}
-
-    if (category === "MOTORS") {
-      features = {
-        brand: formData.get('brand') as string,
-        model: formData.get('model') as string,
-        year: parseInt(formData.get('year') as string),
-        mileage: parseInt(formData.get('mileage') as string),
-        fuelType: formData.get('fuelType') as string,
-        transmission: formData.get('transmission') as string,
-      }
-    }
-
-    const productData = {
-      title: formData.get('title') as string,
-      description: formData.get('description') as string,
-      category,
-      subcategory: formData.get('subcategory') as string,
-      price: parseInt(formData.get('price') as string),
-      currency: formData.get('currency') as string,
-      location: {
-        district: formData.get('district') as string,
-        city: formData.get('city') as string,
-        address: formData.get('address') as string,
-      },
-      images: [formData.get('imageUrl') as string].filter(Boolean),
-      features,
-      contactInfo: {
-        phone: formData.get('phone') as string,
-        email: formData.get('email') as string,
-      }
-    }
-
-    try {
-      await apiClient.createItem(productData)
-      setCreateSuccess(true)
-      setShowAddForm(false)
-      // Refresh the products list
-      // fetchProducts() // TODO: Implement this
-      // Reset form
-      e.currentTarget.reset()
-    } catch (err) {
-      console.error("Error creating product:", err)
-      setCreateError(err instanceof Error ? err.message : "Failed to create product")
-    } finally {
-      setIsCreatingProduct(false)
-    }
-  }
 
   const filteredProducts = selectedCategory === "all"
     ? products
@@ -234,7 +164,7 @@ export default function SellerDashboard() {
               </SelectContent>
             </Select>
           </div>
-          <Button onClick={() => setShowAddForm(true)} className="bg-red-600 hover:bg-red-700">
+          <Button onClick={() => router.push("/category")} className="bg-red-600 hover:bg-red-700">
             <Plus className="w-4 h-4 mr-2" />
             Add Product
           </Button>
@@ -251,7 +181,7 @@ export default function SellerDashboard() {
             <div className="col-span-full text-center py-8">
               <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-600">No products found</p>
-              <Button onClick={() => setShowAddForm(true)} className="mt-4">
+              <Button onClick={() => router.push("/category")} className="mt-4">
                 <Plus className="w-4 h-4 mr-2" />
                 Add Your First Product
               </Button>
@@ -301,178 +231,7 @@ export default function SellerDashboard() {
         </div>
       </div>
 
-      {/* Add Product Modal */}
-      {showAddForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Add New Product</h2>
-            <form onSubmit={handleCreateProduct} className="space-y-4">
-              {createError && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-md">
-                  <p className="text-sm text-red-600">{createError}</p>
-                </div>
-              )}
-
-              {/* Basic Information */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="title">Product Title *</Label>
-                  <Input id="title" name="title" placeholder="Enter product title" required disabled={isCreatingProduct} />
-                </div>
-                <div>
-                  <Label htmlFor="category">Category *</Label>
-                  <Select
-                    name="category"
-                    required
-                    disabled={isCreatingProduct}
-                    value={formCategory}
-                    onValueChange={setFormCategory}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="MOTORS">Motors</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="subcategory">Subcategory *</Label>
-                <Input id="subcategory" name="subcategory" placeholder="e.g., SUV" required disabled={isCreatingProduct} />
-              </div>
-
-              <div>
-                <Label htmlFor="description">Description *</Label>
-                <Textarea id="description" name="description" placeholder="Enter product description" rows={3} required disabled={isCreatingProduct} />
-              </div>
-
-              {/* Price and Currency */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="price">Price *</Label>
-                  <Input id="price" name="price" type="number" placeholder="Enter price" required disabled={isCreatingProduct} />
-                </div>
-                <div>
-                  <Label htmlFor="currency">Currency *</Label>
-                  <Select name="currency" required disabled={isCreatingProduct}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select currency" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Frw">Frw</SelectItem>
-                      <SelectItem value="USD">USD</SelectItem>
-                      <SelectItem value="EUR">EUR</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              {/* Location */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <Label htmlFor="district">District *</Label>
-                  <Input id="district" name="district" placeholder="e.g., Kigali" required disabled={isCreatingProduct} />
-                </div>
-                <div>
-                  <Label htmlFor="city">City *</Label>
-                  <Input id="city" name="city" placeholder="e.g., Kigali" required disabled={isCreatingProduct} />
-                </div>
-                <div>
-                  <Label htmlFor="address">Address *</Label>
-                  <Input id="address" name="address" placeholder="e.g., Kimihurura" required disabled={isCreatingProduct} />
-                </div>
-              </div>
-
-              {/* Category-specific Features */}
-              <div className="border-t pt-4">
-                <h3 className="text-lg font-semibold mb-4">Category Features</h3>
-
-                {/* Motors Features */}
-                {formCategory === "MOTORS" && (
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <Label htmlFor="brand">Brand *</Label>
-                      <Input id="brand" name="brand" placeholder="e.g., Toyota" required disabled={isCreatingProduct} />
-                    </div>
-                    <div>
-                      <Label htmlFor="model">Model *</Label>
-                      <Input id="model" name="model" placeholder="e.g., Land Cruiser" required disabled={isCreatingProduct} />
-                    </div>
-                    <div>
-                      <Label htmlFor="year">Year *</Label>
-                      <Input id="year" name="year" type="number" placeholder="e.g., 2020" required disabled={isCreatingProduct} />
-                    </div>
-                    <div>
-                      <Label htmlFor="mileage">Mileage (km) *</Label>
-                      <Input id="mileage" name="mileage" type="number" placeholder="e.g., 25000" required disabled={isCreatingProduct} />
-                    </div>
-                    <div>
-                      <Label htmlFor="fuelType">Fuel Type *</Label>
-                      <Input id="fuelType" name="fuelType" placeholder="e.g., Diesel" required disabled={isCreatingProduct} />
-                    </div>
-                    <div>
-                      <Label htmlFor="transmission">Transmission *</Label>
-                      <Input id="transmission" name="transmission" placeholder="e.g., Automatic" required disabled={isCreatingProduct} />
-                    </div>
-                  </div>
-                )}
-
-                {/* Cars-only MVP: other feature groups removed */}
-
-                {/* No Category Selected */}
-                {!formCategory && (
-                  <div className="text-center py-8">
-                    <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-600">Please select a category to see relevant features</p>
-                  </div>
-                )}
-              </div>
-
-              {/* Contact Information */}
-              <div className="border-t pt-4">
-                <h3 className="text-lg font-semibold mb-4">Contact Information</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="phone">Phone *</Label>
-                    <Input id="phone" name="phone" placeholder="e.g., +250788123456" required disabled={isCreatingProduct} />
-                  </div>
-                  <div>
-                    <Label htmlFor="email">Email *</Label>
-                    <Input id="email" name="email" type="email" placeholder="e.g., seller@example.com" required disabled={isCreatingProduct} />
-                  </div>
-                </div>
-              </div>
-
-              {/* Image URL */}
-              <div>
-                <Label htmlFor="imageUrl">Image URL</Label>
-                <Input id="imageUrl" name="imageUrl" placeholder="https://example.com/image.jpg" disabled={isCreatingProduct} />
-                <p className="text-xs text-gray-500 mt-1">Add image URL (optional)</p>
-              </div>
-
-              <div className="flex space-x-3 pt-4">
-                <Button type="submit" className="flex-1" disabled={isCreatingProduct}>
-                  {isCreatingProduct ? "Creating Product..." : "Create Product"}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    setShowAddForm(false)
-                    resetFormState()
-                  }}
-                  className="flex-1"
-                  disabled={isCreatingProduct}
-                >
-                  Cancel
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* Add Product flow handled on dedicated pages; modal removed */}
     </div>
     </RoleProtectedRoute>
   )

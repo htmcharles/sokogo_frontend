@@ -174,36 +174,12 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-center space-x-16 h-16">
             <button
-              onClick={() => setActiveCategory("all")}
-              className={`px-6 py-2 rounded-full font-medium ${
-                activeCategory === "all" ? "bg-red-600 text-white" : "text-gray-800 hover:text-red-600"
-              }`}
-            >
-              All
-            </button>
-            <button
               onClick={() => setActiveCategory("motors")}
-              className={`font-medium ${
-                activeCategory === "motors" ? "text-red-600" : "text-gray-800 hover:text-red-600"
+              className={`px-6 py-2 rounded-full font-medium ${
+                activeCategory === "motors" ? "bg-red-600 text-white" : "text-gray-800 hover:text-red-600"
               }`}
             >
               MOTORS
-            </button>
-            <button
-              onClick={() => setActiveCategory("property")}
-              className={`font-medium ${
-                activeCategory === "property" ? "text-red-600" : "text-gray-800 hover:text-red-600"
-              }`}
-            >
-              PROPERTY
-            </button>
-            <button
-              onClick={() => setActiveCategory("electronics")}
-              className={`font-medium ${
-                activeCategory === "electronics" ? "text-red-600" : "text-gray-800 hover:text-red-600"
-              }`}
-            >
-              ELECTRONICS
             </button>
           </div>
         </div>
@@ -224,36 +200,12 @@ export default function Home() {
             {/* Category Tabs */}
             <div className="flex space-x-4 mb-6">
               <button
-                onClick={() => setActiveCategory("all")}
-                className={`px-6 py-2 rounded-full font-medium ${
-                  activeCategory === "all" ? "bg-red-600 text-white" : "text-white hover:text-gray-200"
-                }`}
-              >
-                All
-              </button>
-              <button
                 onClick={() => setActiveCategory("motors")}
-                className={`font-medium ${
-                  activeCategory === "motors" ? "text-red-400" : "text-white hover:text-gray-200"
+                className={`px-6 py-2 rounded-full font-medium ${
+                  activeCategory === "motors" ? "bg-red-600 text-white" : "text-white hover:text-gray-200"
                 }`}
               >
                 MOTORS
-              </button>
-              <button
-                onClick={() => setActiveCategory("property")}
-                className={`font-medium ${
-                  activeCategory === "property" ? "text-red-400" : "text-white hover:text-gray-200"
-                }`}
-              >
-                PROPERTY
-              </button>
-              <button
-                onClick={() => setActiveCategory("electronics")}
-                className={`font-medium ${
-                  activeCategory === "electronics" ? "text-red-400" : "text-white hover:text-gray-200"
-                }`}
-              >
-                ELECTRONICS
               </button>
             </div>
           </div>
@@ -323,103 +275,14 @@ export default function Home() {
         )}
       </section>
 
-      {/* Popular in PROPERTY Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h2 className="text-2xl font-bold text-gray-800 mb-8">
-          Popular in <span className="text-red-600">PROPERTY</span>
-        </h2>
 
-        {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="bg-gray-200 rounded-lg h-64 animate-pulse"></div>
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {propertiesData.length > 0 ? (
-              propertiesData.map((property) => (
-                <div
-                  key={property._id}
-                  className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
-                >
-                  <img
-                    src={property.images[0] || "/placeholder.svg?height=200&width=300&query=modern house"}
-                    alt={property.title}
-                    className="w-full h-48 object-cover"
-                  />
-                  <div className="p-4">
-                    <p className="text-red-600 font-bold text-lg mb-1">{formatPrice(property.price)}</p>
-                    <h3 className="font-semibold text-gray-800 mb-2">{property.title}</h3>
-                    <p className="text-gray-600 text-sm">
-                      {property.location?.city && property.location?.district
-                        ? `${property.location.city}, ${property.location.district}`
-                        : property.location?.city || property.location?.district || 'Location not specified'
-                      }
-                    </p>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="col-span-full text-center py-8">
-                <p className="text-gray-500">No properties available at the moment</p>
-              </div>
-            )}
-          </div>
-        )}
-      </section>
-
-      {/* Popular in ELECTRONICS Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h2 className="text-2xl font-bold text-gray-800 mb-8">
-          Popular in <span className="text-red-600">ELECTRONICS</span>
-        </h2>
-
-        {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="bg-gray-200 rounded-lg h-64 animate-pulse"></div>
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {electronicsData.length > 0 ? (
-              electronicsData.map((item) => (
-                <div
-                  key={item._id}
-                  className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
-                >
-                  <img
-                    src={item.images[0] || "/placeholder.svg?height=200&width=300&query=electronics"}
-                    alt={item.title}
-                    className="w-full h-48 object-cover"
-                  />
-                  <div className="p-4">
-                    <p className="text-red-600 font-bold text-lg mb-1">{formatPrice(item.price)}</p>
-                    <h3 className="font-semibold text-gray-800 mb-2">{item.title}</h3>
-                    <p className="text-gray-600 text-sm">{item.condition}</p>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="col-span-full text-center py-8">
-                <p className="text-gray-500">No electronics available at the moment</p>
-              </div>
-            )}
-          </div>
-        )}
-      </section>
 
       {/* Why Choose Us Section */}
       <section className="bg-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-800 mb-4">Why Choose SOKOGO</h2>
-            <p className="text-gray-600 max-w-3xl mx-auto">
-              Our marketplace is designed to provide a seamless and efficient experience for our users. Whether you're
-              buying a car, finding property, or shopping for electronics, our platform offers a range of features to
-              meet your needs.
-            </p>
+            <p className="text-gray-600 max-w-3xl mx-auto">Our marketplace is designed for a seamless car-buying experience in Rwanda.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -573,9 +436,7 @@ export default function Home() {
                 <span className="text-white">SOKO</span>
                 <span className="text-red-600">GO</span>
               </h3>
-              <p className="text-gray-300">
-                Your premier destination for buying and selling cars, properties, and electronics across Rwanda.
-              </p>
+              <p className="text-gray-300">Your premier destination for buying and selling cars across Rwanda.</p>
               <div className="flex space-x-4">
                 <Facebook className="h-5 w-5 text-gray-400 hover:text-white cursor-pointer" />
                 <Instagram className="h-5 w-5 text-gray-400 hover:text-white cursor-pointer" />
@@ -602,16 +463,7 @@ export default function Home() {
                     Motors
                   </Link>
                 </li>
-                <li>
-                  <Link href="/property" className="text-gray-300 hover:text-white">
-                    Property
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/electronics" className="text-gray-300 hover:text-white">
-                    Electronics
-                  </Link>
-                </li>
+
               </ul>
             </div>
 
