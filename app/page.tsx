@@ -25,7 +25,7 @@ import { useAuth } from "@/contexts/AuthContext"
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("")
-  const [activeCategory, setActiveCategory] = useState("all")
+  const [activeCategory, setActiveCategory] = useState("motors")
   const [contactForm, setContactForm] = useState({
     fullName: "",
     email: "",
@@ -33,8 +33,6 @@ export default function Home() {
   })
   const [newsletterEmail, setNewsletterEmail] = useState("")
   const [carsData, setCarsData] = useState<Item[]>([])
-  const [propertiesData, setPropertiesData] = useState<Item[]>([])
-  const [electronicsData, setElectronicsData] = useState<Item[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
   const { isAuthenticated, user } = useAuth()
@@ -45,23 +43,15 @@ export default function Home() {
         setIsLoading(true)
         console.log("[v0] Starting to fetch data from backend...")
 
-        // Fetch popular items for each category
-        const [carsResponse, propertiesResponse, electronicsResponse] = await Promise.all([
+        // Fetch popular items for cars only
+        const [carsResponse] = await Promise.all([
           apiClient.getPopularItems("MOTORS").catch((error) => {
-            return { items: [] }
-          }),
-          apiClient.getPopularItems("PROPERTY").catch((error) => {
-            return { items: [] }
-          }),
-          apiClient.getPopularItems("ELECTRONICS").catch((error) => {
             return { items: [] }
           }),
         ])
 
 
         setCarsData(carsResponse.items.slice(0, 4)) // Show only first 4 items
-        setPropertiesData(propertiesResponse.items.slice(0, 4))
-        setElectronicsData(electronicsResponse.items.slice(0, 4))
       } catch (error) {
         console.error("Error fetching data:", error)
         // Keep empty arrays as fallback
