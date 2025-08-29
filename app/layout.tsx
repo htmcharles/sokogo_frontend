@@ -15,9 +15,9 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "SOKOGO - Buy & Sell Cars, Property & Electronics in Rwanda",
+  title: "SOKOGO - Buy & Sell Cars in Rwanda",
   description:
-    "Rwanda's premier marketplace for cars, property, and electronics. Buy and sell with confidence on SOKOGO.",
+    "Rwanda's premier marketplace for cars. Buy and sell with confidence on SOKOGO.",
     generator: 'v0.app'
 }
 

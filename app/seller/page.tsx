@@ -91,7 +91,7 @@ export default function SellerDashboard() {
     setCreateSuccess(false)
 
     const formData = new FormData(e.currentTarget)
-    const category = formData.get('category') as "MOTORS" | "PROPERTY" | "ELECTRONICS"
+    const category = formData.get('category') as "MOTORS"
 
     // Build features object based on category
     let features: any = {}
@@ -104,18 +104,6 @@ export default function SellerDashboard() {
         mileage: parseInt(formData.get('mileage') as string),
         fuelType: formData.get('fuelType') as string,
         transmission: formData.get('transmission') as string,
-      }
-    } else if (category === "PROPERTY") {
-      features = {
-        bedrooms: parseInt(formData.get('bedrooms') as string),
-        bathrooms: parseInt(formData.get('bathrooms') as string),
-        area: parseInt(formData.get('area') as string),
-        areaUnit: formData.get('areaUnit') as string,
-      }
-    } else if (category === "ELECTRONICS") {
-      features = {
-        condition: formData.get('condition') as string,
-        warranty: formData.get('warranty') === 'true',
       }
     }
 
@@ -243,8 +231,6 @@ export default function SellerDashboard() {
               <SelectContent>
                 <SelectItem value="all">All Categories</SelectItem>
                 <SelectItem value="MOTORS">Motors</SelectItem>
-                <SelectItem value="ELECTRONICS">Electronics</SelectItem>
-                <SelectItem value="PROPERTY">Property</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -347,8 +333,6 @@ export default function SellerDashboard() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="MOTORS">Motors</SelectItem>
-                      <SelectItem value="ELECTRONICS">Electronics</SelectItem>
-                      <SelectItem value="PROPERTY">Property</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -356,7 +340,7 @@ export default function SellerDashboard() {
 
               <div>
                 <Label htmlFor="subcategory">Subcategory *</Label>
-                <Input id="subcategory" name="subcategory" placeholder="e.g., SUV, Smartphone, Apartment" required disabled={isCreatingProduct} />
+                <Input id="subcategory" name="subcategory" placeholder="e.g., SUV" required disabled={isCreatingProduct} />
               </div>
 
               <div>
@@ -435,49 +419,7 @@ export default function SellerDashboard() {
                   </div>
                 )}
 
-                {/* Property Features */}
-                {formCategory === "PROPERTY" && (
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div>
-                      <Label htmlFor="bedrooms">Bedrooms *</Label>
-                      <Input id="bedrooms" name="bedrooms" type="number" placeholder="e.g., 3" required disabled={isCreatingProduct} />
-                    </div>
-                    <div>
-                      <Label htmlFor="bathrooms">Bathrooms *</Label>
-                      <Input id="bathrooms" name="bathrooms" type="number" placeholder="e.g., 2" required disabled={isCreatingProduct} />
-                    </div>
-                    <div>
-                      <Label htmlFor="area">Area *</Label>
-                      <Input id="area" name="area" type="number" placeholder="e.g., 150" required disabled={isCreatingProduct} />
-                    </div>
-                    <div>
-                      <Label htmlFor="areaUnit">Area Unit *</Label>
-                      <Input id="areaUnit" name="areaUnit" placeholder="e.g., m²" required disabled={isCreatingProduct} />
-                    </div>
-                  </div>
-                )}
-
-                {/* Electronics Features */}
-                {formCategory === "ELECTRONICS" && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="condition">Condition *</Label>
-                      <Input id="condition" name="condition" placeholder="e.g., Excellent" required disabled={isCreatingProduct} />
-                    </div>
-                    <div>
-                      <Label htmlFor="warranty">Warranty *</Label>
-                      <Select name="warranty" required disabled={isCreatingProduct}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select warranty" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="true">Yes</SelectItem>
-                          <SelectItem value="false">No</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                )}
+                {/* Cars-only MVP: other feature groups removed */}
 
                 {/* No Category Selected */}
                 {!formCategory && (
