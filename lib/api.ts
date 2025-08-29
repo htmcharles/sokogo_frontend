@@ -43,23 +43,13 @@ export interface Item {
     address?: string
   }
   features?: {
-    // Motors features
+    // Motors features only (MVP scope)
     brand?: string
     model?: string
     year?: number
     mileage?: number
     fuelType?: string
     transmission?: string
-
-    // Property features
-    bedrooms?: number
-    bathrooms?: number
-    area?: number
-    areaUnit?: string
-
-    // Electronics features
-    condition?: string
-    warranty?: boolean
   }
   contactInfo?: {
     phone?: string
@@ -182,7 +172,7 @@ class ApiClient {
   async createItem(itemData: {
     title: string
     description: string
-    category: "MOTORS" | "PROPERTY" | "ELECTRONICS"
+    category: "MOTORS"
     subcategory: string
     price: number
     currency: string
@@ -200,16 +190,6 @@ class ApiClient {
       mileage?: number
       fuelType?: string
       transmission?: string
-
-      // For property
-      bedrooms?: number
-      bathrooms?: number
-      area?: number
-      areaUnit?: string
-
-      // For electronics
-      condition?: string
-      warranty?: boolean
     }
     contactInfo: {
       phone: string
