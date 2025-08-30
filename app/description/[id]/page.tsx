@@ -204,8 +204,76 @@ export default function DescriptionPage() {
                 </div>
               )}
             </div>
+            {/* Features Section */}
+            <div className="bg-white rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Features</h3>
+              <div className="mb-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-medium text-gray-800">Vehicle Features</h4>
+                  <span className="text-sm text-gray-500">6 ↗</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    item.features?.cruiseControl ? "Cruise Control" : null,
+                    item.features?.technicalControl === "yes" ? "Technical Control Passed" : null,
+                    item.features?.isInsuredInRwanda === "yes" ? "Insured in Rwanda" : null,
+                    item.features?.warranty === "yes" ? "Warranty Available" : null,
+                    item.features?.steeringSide ? `${item.features.steeringSide} Hand Drive` : null,
+                    item.features?.fuelType ? `${item.features.fuelType} Fuel` : null
+                  ].filter(Boolean).map((feature, index) => (
+                    <div key={index} className="flex items-center gap-2 text-sm">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      {feature}
+                    </div>
+                  ))}
+                </div>
+                {item.features && Object.keys(item.features).length === 0 && (
+                  <p className="text-gray-500 text-sm">No specific features listed</p>
+                )}
+              </div>
+                      </div>
+                                  {/* Seller Information */}
+            <div className="bg-white rounded-lg p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 bg-red-600 rounded-lg flex items-center justify-center text-white font-bold">
+                  SOKO
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900">SOKOGO Group L.L.C</h3>
+                  <div className="flex items-center gap-1">
+                    <CheckCircle className="w-4 h-4 text-blue-600" />
+                    <span className="text-sm text-gray-600">Verified</span>
+                  </div>
+                </div>
+              </div>
+              <p className="text-sm text-gray-600 mb-4">Dealer</p>
+              <Button variant="outline" className="w-full">
+                View All Cars
+              </Button>
+            </div>
+            {/* Contact Buttons */}
+            <div className="bg-white rounded-lg p-6">
+              <h3 className="font-semibold text-gray-900 mb-4">Contact Seller</h3>
+              <div className="flex gap-3">
+                <Button className="flex-1 bg-green-600 hover:bg-green-700">
+                  <Phone className="w-4 h-4 mr-2" />
+                  Call
+                </Button>
+                <Button className="flex-1 bg-green-500 hover:bg-green-600">
+                  <span className="mr-2">💬</span>
+                  WhatsApp
+                </Button>
+                <Button className="flex-1 bg-blue-600 hover:bg-blue-700">
+                  <span className="mr-2">💬</span>
+                  Chat
+                </Button>
+              </div>
+            </div>
+          </div>
 
-            {/* Car Details Section */}
+          {/* Right Column - Sidebar */}
+                  <div className="space-y-6">
+                                  {/* Car Details Section */}
             <div className="bg-white rounded-lg p-6">
               {/* Price and Actions */}
               <div className="flex items-center justify-between mb-6">
@@ -350,75 +418,6 @@ export default function DescriptionPage() {
               </p>
             </div>
 
-            {/* Features Section */}
-            <div className="bg-white rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Features</h3>
-              <div className="mb-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="font-medium text-gray-800">Vehicle Features</h4>
-                  <span className="text-sm text-gray-500">6 ↗</span>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  {[
-                    item.features?.cruiseControl ? "Cruise Control" : null,
-                    item.features?.technicalControl === "yes" ? "Technical Control Passed" : null,
-                    item.features?.isInsuredInRwanda === "yes" ? "Insured in Rwanda" : null,
-                    item.features?.warranty === "yes" ? "Warranty Available" : null,
-                    item.features?.steeringSide ? `${item.features.steeringSide} Hand Drive` : null,
-                    item.features?.fuelType ? `${item.features.fuelType} Fuel` : null
-                  ].filter(Boolean).map((feature, index) => (
-                    <div key={index} className="flex items-center gap-2 text-sm">
-                      <CheckCircle className="w-4 h-4 text-green-600" />
-                      {feature}
-                    </div>
-                  ))}
-                </div>
-                {item.features && Object.keys(item.features).length === 0 && (
-                  <p className="text-gray-500 text-sm">No specific features listed</p>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Right Column - Sidebar */}
-          <div className="space-y-6">
-            {/* Seller Information */}
-            <div className="bg-white rounded-lg p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-red-600 rounded-lg flex items-center justify-center text-white font-bold">
-                  SOKO
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">SOKOGO Group L.L.C</h3>
-                  <div className="flex items-center gap-1">
-                    <CheckCircle className="w-4 h-4 text-blue-600" />
-                    <span className="text-sm text-gray-600">Verified</span>
-                  </div>
-                </div>
-              </div>
-              <p className="text-sm text-gray-600 mb-4">Dealer</p>
-              <Button variant="outline" className="w-full">
-                View All Cars
-              </Button>
-            </div>
-            {/* Contact Buttons */}
-            <div className="bg-white rounded-lg p-6">
-              <h3 className="font-semibold text-gray-900 mb-4">Contact Seller</h3>
-              <div className="flex gap-3">
-                <Button className="flex-1 bg-green-600 hover:bg-green-700">
-                  <Phone className="w-4 h-4 mr-2" />
-                  Call
-                </Button>
-                <Button className="flex-1 bg-green-500 hover:bg-green-600">
-                  <span className="mr-2">💬</span>
-                  WhatsApp
-                </Button>
-                <Button className="flex-1 bg-blue-600 hover:bg-blue-700">
-                  <span className="mr-2">💬</span>
-                  Chat
-                </Button>
-              </div>
-            </div>
           </div>
         </div>
       </div>
