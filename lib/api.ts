@@ -8,7 +8,7 @@ export interface User {
   lastName: string
   email: string
   phoneNumber: string
-  role: 'buyer' | 'seller' | 'admin'
+  role: "buyer" | "seller" | "admin"
 }
 
 export interface LoginResponse {
@@ -147,9 +147,28 @@ class ApiClient {
     email: string
     phoneNumber: string
     password: string
-    role: 'buyer' | 'seller' | 'admin'
+    role: "seller"
   }): Promise<RegisterResponse> {
     console.log("[v0] Attempting registration with data:", { ...userData, password: "[HIDDEN]" })
+    return this.request<RegisterResponse>("/auth/register", {
+      method: "POST",
+      body: JSON.stringify(userData),
+    })
+  }
+
+  async createGoogleUser(userData: {
+    firstName: string
+    lastName: string
+    email: string
+    phoneNumber: string
+    password?: string
+    role: "seller"
+    googleId: string
+  }): Promise<RegisterResponse> {
+    console.log("[v0] Creating Google user with data:", {
+      ...userData,
+      password: userData.password ? "[HIDDEN]" : "none",
+    })
     return this.request<RegisterResponse>("/auth/register", {
       method: "POST",
       body: JSON.stringify(userData),
@@ -164,7 +183,7 @@ class ApiClient {
   async getPopularItems(category: string): Promise<{ items: Item[] }> {
     return this.request<{ items: Item[] }>(`/items?category=${category}`)
   }
-    
+
   async getItemById(itemId: string): Promise<Item> {
     return this.request<Item>(`/items/${itemId}`)
   }
@@ -207,7 +226,10 @@ class ApiClient {
   }
 
   // Admin methods
-  async getUsersByRole(role: string, page: number = 1): Promise<{
+  async getUsersByRole(
+    role: string,
+    page = 1,
+  ): Promise<{
     message: string
     users: User[]
     pagination: {
@@ -227,6 +249,21 @@ class ApiClient {
         usersPerPage: number
       }
     }>(`/auth/users?role=${role}&page=${page}`)
+  }
+
+  // Profile management methods for Google OAuth users
+  async updateProfile(profileData: {
+    phoneNumber?: string
+    password?: string
+  }): Promise<{ message: string; user: User }> {
+    return this.request<{ message: string; user: User }>("/auth/profile", {
+      method: "PUT",
+      body: JSON.stringify(profileData),
+    })
+  }
+
+  async getUserProfile(email: string): Promise<User> {
+    return this.request<User>(`/auth/profile?email=${encodeURIComponent(email)}`)
   }
 
   // Utility methods

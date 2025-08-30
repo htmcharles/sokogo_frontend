@@ -9,6 +9,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useAuth } from "@/contexts/AuthContext"
+import { GoogleSignInButton } from "@/components/GoogleSignInButton"
+import { useSession } from "next-auth/react"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -19,6 +21,7 @@ export default function LoginPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { login } = useAuth()
+  const { data: session, status } = useSession()
 
   // Check for success message from registration
   useEffect(() => {
@@ -27,6 +30,16 @@ export default function LoginPage() {
       setSuccessMessage(message)
     }
   }, [searchParams])
+
+  useEffect(() => {
+    if (status === "authenticated" && session?.user) {
+      if (session.user.needsProfileCompletion) {
+        router.push("/complete-profile")
+      } else {
+        router.push("/seller")
+      }
+    }
+  }, [session, status, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -38,13 +51,24 @@ export default function LoginPage() {
       console.log("Login successful")
 
       // Redirect to dashboard after successful login
-      router.push("/dashboard")
+      router.push("/seller")
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed")
       console.error("Login error:", err)
     } finally {
       setIsLoading(false)
     }
+  }
+
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mx-auto"></div>
+          <p className="mt-2 text-gray-600">Checking authentication...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -77,7 +101,20 @@ export default function LoginPage() {
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-4">
+              <GoogleSignInButton mode="signin" disabled={isLoading} />
+
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-white px-2 text-muted-foreground">Or continue with</span>
+                </div>
+              </div>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-6 mt-4">
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                   Email address

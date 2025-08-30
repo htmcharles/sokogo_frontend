@@ -17,8 +17,9 @@ interface AuthContextType {
     email: string
     phoneNumber: string
     password: string
-    role: 'buyer' | 'seller' | 'admin'
+    role: "buyer" | "seller" | "admin"
   }) => Promise<void>
+  setUserAfterGoogleSignup: (userData: User) => void
   logout: () => void
 }
 
@@ -55,13 +56,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // Automatic role-based redirects
       if (typeof window !== "undefined") {
-        if (response.user.role === 'admin') {
-          window.location.href = '/admin'
-        } else if (response.user.role === 'seller') {
-          window.location.href = '/seller'
+        if (response.user.role === "admin") {
+          window.location.href = "/admin"
+        } else if (response.user.role === "seller") {
+          window.location.href = "/seller"
         } else {
           // Default redirect for buyers
-          window.location.href = '/dashboard'
+          window.location.href = "/dashboard"
         }
       }
     } catch (error) {
@@ -85,6 +86,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const setUserAfterGoogleSignup = (userData: User) => {
+    setUser(userData)
+  }
+
   const logout = () => {
     apiClient.logout()
     setUser(null)
@@ -98,11 +103,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     user,
     isAuthenticated: !!user,
     isLoading,
-    isAdmin: user?.role === 'admin',
-    isSeller: user?.role === 'seller',
-    isBuyer: user?.role === 'buyer',
+    isAdmin: user?.role === "admin",
+    isSeller: user?.role === "seller",
+    isBuyer: user?.role === "buyer",
     login,
     register,
+    setUserAfterGoogleSignup,
     logout,
   }
 

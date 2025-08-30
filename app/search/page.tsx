@@ -108,7 +108,7 @@ export default function SearchPage() {
                     window.location.href = "/admin"
                   } else if (user?.role === "seller") {
                     window.location.href = "/seller"
-                  } else {
+                  }else {
                     window.location.href = "/dashboard"
                   }
                 } else {
