@@ -3,7 +3,7 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { ArrowLeft, ChevronLeft, ChevronRight, Phone, Mail, MapPin, Heart, Share2, CheckCircle, Calendar, Gauge, SteeringWheel, Globe } from "lucide-react"
+import { ArrowLeft, ChevronLeft, ChevronRight, Phone, Mail, MapPin, Heart, Share2, CheckCircle, Calendar, Gauge, Globe } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { apiClient, type Item } from "@/lib/api"
 
@@ -24,11 +24,16 @@ export default function DescriptionPage() {
         const response = await apiClient.getItemById(params.id as string)
         console.log("Item response:", response)
 
+        // Handle the API response structure: { message: string, item: Item }
         if (response && (response as any).item) {
+          console.log("Setting item from response.item:", (response as any).item)
           setItem((response as any).item as Item)
         } else if (response && (response as any)._id) {
+          // Fallback: If response is already the item object
+          console.log("Setting item from response directly:", response)
           setItem(response as Item)
         } else {
+          console.log("Invalid response structure:", response)
           setError("Invalid item data received")
         }
       } catch (err) {
@@ -233,21 +238,21 @@ export default function DescriptionPage() {
                     {item.features.year}
                   </div>
                 )}
-                {item.features?.mileage && (
+                {item.features?.kilometers && (
                   <div className="flex items-center gap-2">
                     <Gauge className="w-4 h-4" />
-                    {item.features.mileage.toLocaleString()} km
+                    {item.features.kilometers.toLocaleString()} km
                   </div>
                 )}
-                {item.features?.transmission && (
+                {item.features?.transmissionType && (
                   <div className="flex items-center gap-2">
-                    <SteeringWheel className="w-4 h-4" />
-                    {item.features.transmission}
+                    <span>⚙️</span>
+                    {item.features.transmissionType}
                   </div>
                 )}
                 <div className="flex items-center gap-2">
                   <Globe className="w-4 h-4" />
-                  GCC Specs
+                  Rwanda Specs
                 </div>
               </div>
 
@@ -266,53 +271,53 @@ export default function DescriptionPage() {
                   <div className="space-y-3">
                     <div>
                       <span className="text-sm text-gray-500">Interior Color</span>
-                      <p className="font-medium">Tan</p>
+                      <p className="font-medium">{item.features?.interiorColor || "N/A"}</p>
                     </div>
                     <div>
                       <span className="text-sm text-gray-500">Exterior Color</span>
-                      <p className="font-medium">Grey</p>
+                      <p className="font-medium">{item.features?.exteriorColor || "N/A"}</p>
                     </div>
                     <div>
                       <span className="text-sm text-gray-500">Body Type</span>
-                      <p className="font-medium">Sedan</p>
+                      <p className="font-medium">{item.features?.bodyType || "N/A"}</p>
                     </div>
                     <div>
                       <span className="text-sm text-gray-500">Seating Capacity</span>
-                      <p className="font-medium">5 Seater</p>
+                      <p className="font-medium">{item.features?.seatingCapacity || "N/A"} Seater</p>
                     </div>
                     <div>
                       <span className="text-sm text-gray-500">Transmission Type</span>
-                      <p className="font-medium">{item.features?.transmission || "Automatic"}</p>
+                      <p className="font-medium">{item.features?.transmissionType || "N/A"}</p>
                     </div>
                     <div>
-                      <span className="text-sm text-gray-500">Seller type</span>
-                      <p className="font-medium">Dealer</p>
+                      <span className="text-sm text-gray-500">Steering Side</span>
+                      <p className="font-medium">{item.features?.steeringSide || "N/A"}</p>
                     </div>
                   </div>
                   <div className="space-y-3">
                     <div>
                       <span className="text-sm text-gray-500">Horsepower</span>
-                      <p className="font-medium">200 - 299 HP</p>
+                      <p className="font-medium">{item.features?.horsePower || "N/A"} HP</p>
                     </div>
                     <div>
                       <span className="text-sm text-gray-500">Doors</span>
-                      <p className="font-medium">4 door</p>
+                      <p className="font-medium">{item.features?.doors || "N/A"} door{item.features?.doors !== 1 ? "s" : ""}</p>
                     </div>
                     <div>
-                      <span className="text-sm text-gray-500">Target Market</span>
-                      <p className="font-medium">UAE (can be exported)</p>
+                      <span className="text-sm text-gray-500">Fuel Type</span>
+                      <p className="font-medium">{item.features?.fuelType || "N/A"}</p>
                     </div>
                     <div>
-                      <span className="text-sm text-gray-500">No. of Cylinders</span>
-                      <p className="font-medium">4</p>
+                      <span className="text-sm text-gray-500">Make</span>
+                      <p className="font-medium">{item.features?.make || "N/A"}</p>
                     </div>
                     <div>
-                      <span className="text-sm text-gray-500">Engine Capacity (cc)</span>
-                      <p className="font-medium">2000 - 2499 cc</p>
+                      <span className="text-sm text-gray-500">Model</span>
+                      <p className="font-medium">{item.features?.model || "N/A"}</p>
                     </div>
                     <div>
-                      <span className="text-sm text-gray-500">Trim</span>
-                      <p className="font-medium">{item.features?.model || "E 300"}</p>
+                      <span className="text-sm text-gray-500">Warranty</span>
+                      <p className="font-medium">{item.features?.warranty === "yes" ? "Yes" : "No"}</p>
                     </div>
                   </div>
                 </div>
@@ -321,11 +326,15 @@ export default function DescriptionPage() {
               {/* Warranty and Price Details */}
               <div className="mb-6 p-4 bg-gray-50 rounded-lg">
                 <p className="font-semibold text-gray-900 mb-2">
-                  (5 Years Warranty Or 105K KM @Official Dealer) {item.features?.year || "2025"} {item.features?.brand || "MERCEDES-BENZ"} {item.features?.model || "E 300"} 2.0L RWD GCC 0Km
+                  {item.features?.year || "N/A"} {item.features?.make || "N/A"} {item.features?.model || "N/A"} - {item.features?.bodyType || "N/A"}
                 </p>
-                <p className="text-gray-700 mb-2">5 Years Warranty Or 105,000 At Official Dealer</p>
+                <p className="text-gray-700 mb-2">
+                  {item.features?.warranty === "yes" ? "Warranty Available" : "No Warranty"} • 
+                  {item.features?.isInsuredInRwanda === "yes" ? " Insured in Rwanda" : " Not Insured in Rwanda"} • 
+                  {item.features?.technicalControl === "yes" ? " Technical Control Passed" : " Technical Control Required"}
+                </p>
                 <p className="text-gray-700">
-                  Price: ({formatPrice(item.price, item.currency)}), (${(item.price / 3.67).toLocaleString()})
+                  Price: ({formatPrice(item.price, item.currency)}), (${(item.price / 1200).toLocaleString()})
                 </p>
                 <button className="text-red-600 hover:text-red-700 text-sm font-medium mt-2">
                   Read More
@@ -346,26 +355,27 @@ export default function DescriptionPage() {
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Features</h3>
               <div className="mb-4">
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="font-medium text-gray-800">Drivers Assistance & Safety</h4>
-                  <span className="text-sm text-gray-500">8 ↗</span>
+                  <h4 className="font-medium text-gray-800">Vehicle Features</h4>
+                  <span className="text-sm text-gray-500">6 ↗</span>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   {[
-                    "Anti-Lock Brakes/ABS",
-                    "Dual Exhaust",
-                    "Power Steering",
-                    "Side Airbags",
-                    "Cruise Control",
-                    "Front Airbags",
-                    "Rear Wheel Drive",
-                    "Tiptronic Gears"
-                  ].map((feature, index) => (
+                    item.features?.cruiseControl ? "Cruise Control" : null,
+                    item.features?.technicalControl === "yes" ? "Technical Control Passed" : null,
+                    item.features?.isInsuredInRwanda === "yes" ? "Insured in Rwanda" : null,
+                    item.features?.warranty === "yes" ? "Warranty Available" : null,
+                    item.features?.steeringSide ? `${item.features.steeringSide} Hand Drive` : null,
+                    item.features?.fuelType ? `${item.features.fuelType} Fuel` : null
+                  ].filter(Boolean).map((feature, index) => (
                     <div key={index} className="flex items-center gap-2 text-sm">
                       <CheckCircle className="w-4 h-4 text-green-600" />
                       {feature}
                     </div>
                   ))}
                 </div>
+                {item.features && Object.keys(item.features).length === 0 && (
+                  <p className="text-gray-500 text-sm">No specific features listed</p>
+                )}
               </div>
             </div>
           </div>

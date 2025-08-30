@@ -48,8 +48,22 @@ export interface Item {
     model?: string
     year?: number
     mileage?: number
+    kilometers?: number
     fuelType?: string
     transmission?: string
+    transmissionType?: string
+    make?: string
+    bodyType?: string
+    isInsuredInRwanda?: string
+    technicalControl?: string
+    exteriorColor?: string
+    interiorColor?: string
+    warranty?: string
+    doors?: number
+    steeringSide?: string
+    seatingCapacity?: number
+    horsePower?: number
+    cruiseControl?: boolean
   }
   contactInfo?: {
     phone?: string
@@ -207,8 +221,22 @@ class ApiClient {
       model?: string
       year?: number
       mileage?: number
+      kilometers?: number
       fuelType?: string
       transmission?: string
+      transmissionType?: string
+      make?: string
+      bodyType?: string
+      isInsuredInRwanda?: string
+      technicalControl?: string
+      exteriorColor?: string
+      interiorColor?: string
+      warranty?: string
+      doors?: number
+      steeringSide?: string
+      seatingCapacity?: number
+      horsePower?: number
+      cruiseControl?: boolean
     }
     contactInfo: {
       phone: string
