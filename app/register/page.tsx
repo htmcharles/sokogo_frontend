@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -10,6 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/AuthContext"
+import { GoogleSignInButton } from "@/components/GoogleSignInButton"
+import { useSession } from "next-auth/react"
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -25,6 +27,17 @@ export default function RegisterPage() {
   const [error, setError] = useState("")
   const router = useRouter()
   const { register } = useAuth()
+  const { data: session, status } = useSession()
+
+  useEffect(() => {
+    if (status === "authenticated" && session?.user) {
+      if (session.user.needsProfileCompletion) {
+        router.push("/complete-profile")
+      } else {
+        router.push("/seller")
+      }
+    }
+  }, [session, status, router])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -88,6 +101,17 @@ export default function RegisterPage() {
     }
   }
 
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mx-auto"></div>
+          <p className="mt-2 text-gray-600">Checking authentication...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
@@ -103,7 +127,7 @@ export default function RegisterPage() {
         <Card>
           <CardHeader>
             <CardTitle>Get started</CardTitle>
-            <CardDescription>Create your account to start buying and selling</CardDescription>
+            <CardDescription>Create your seller account to start selling on SOKOGO</CardDescription>
           </CardHeader>
           <CardContent>
             {error && (
@@ -121,6 +145,19 @@ export default function RegisterPage() {
                 )}
               </div>
             )}
+
+            <div className="space-y-4 mb-6">
+              <GoogleSignInButton mode="signup" disabled={isLoading} />
+
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-white px-2 text-muted-foreground">Or continue with</span>
+                </div>
+              </div>
+            </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
@@ -190,21 +227,17 @@ export default function RegisterPage() {
 
               <div>
                 <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-2">
-                  Account Type
+                  Account type
                 </label>
                 <Select value={formData.role} onValueChange={handleRoleChange}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select account type" />
+                    <SelectValue placeholder="Select your role" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="buyer">Buyer - Browse and purchase items</SelectItem>
-                    <SelectItem value="seller">Seller - List and sell items</SelectItem>
-                    <SelectItem value="admin">Admin - Manage platform (Restricted)</SelectItem>
+                    <SelectItem value="buyer">Buyer</SelectItem>
+                    <SelectItem value="seller">Seller</SelectItem>
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-gray-500 mt-1">
-                  Choose your account type. Sellers can list products, buyers can purchase them.
-                </p>
               </div>
 
               <div>
