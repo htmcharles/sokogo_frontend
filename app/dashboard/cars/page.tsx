@@ -8,6 +8,7 @@ import Link from "next/link"
 import { useState, useEffect } from "react"
 import { apiClient, type Item } from "@/lib/api"
 import Image from "next/image"
+import CarCard from "@/components/CarCard"
 
 interface Car extends Item {
   year?: number
@@ -113,57 +114,7 @@ export default function CarsPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {cars.map((car) => (
-                <Card key={car._id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                  <div className="relative h-48">
-                    <Image src={car.images?.[0] || "/placeholder.svg"} alt={car.title} fill className="object-cover" />
-                    <div className="absolute top-4 right-4">
-                                              <span
-                          className={`px-3 py-1 rounded-full text-sm font-medium ${
-                            (car.status || "AVAILABLE") === "AVAILABLE" || (car.status || "ACTIVE") === "ACTIVE" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                          }`}
-                        >
-                          {car.status || "AVAILABLE"}
-                        </span>
-                    </div>
-                  </div>
-
-                  <CardContent className="p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">{car.title}</h3>
-                    <p className="text-gray-600 text-sm mb-2">{formatLocation(car.location)}</p>
-
-                    <div className="space-y-2 mb-4">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-500">Year:</span>
-                        <span className="font-medium">{car.year || "N/A"}</span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-500">Mileage:</span>
-                        <span className="font-medium">{car.mileage || "N/A"}</span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-500">Transmission:</span>
-                        <span className="font-medium">{car.transmission || "N/A"}</span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <span className="text-2xl font-bold text-red-600">Frw {car.price.toLocaleString()}</span>
-                      </div>
-                      <div className="flex space-x-2">
-                        {(car.status || "AVAILABLE") === "AVAILABLE" || (car.status || "ACTIVE") === "ACTIVE" ? (
-                          <Link href={`/description/${car._id}`}>
-                            <Button className="bg-red-600 hover:bg-red-700">Book Now</Button>
-                          </Link>
-                        ) : (
-                          <Button disabled className="bg-gray-400 cursor-not-allowed">
-                            Not Available
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                <CarCard key={car._id} car={car} />
               ))}
             </div>
           )}

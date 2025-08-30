@@ -1,49 +1,20 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { ArrowLeft, ChevronLeft, ChevronRight, Phone, Mail, MapPin } from "lucide-react"
+import { ArrowLeft, ChevronLeft, ChevronRight, Phone, Mail, MapPin, Heart, Share2, CheckCircle, Calendar, Gauge, SteeringWheel, Globe } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
 import { apiClient, type Item } from "@/lib/api"
 
-export default function BookingPage() {
+export default function DescriptionPage() {
   const params = useParams()
   const router = useRouter()
   const [item, setItem] = useState<Item | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
-
-  // Reset image index when item changes
-  useEffect(() => {
-    if (item?.images && item.images.length > 0) {
-      setCurrentImageIndex(0)
-    } else {
-      setCurrentImageIndex(0)
-    }
-  }, [item])
-
-  // Ensure currentImageIndex is within bounds
-  useEffect(() => {
-    if (item?.images && item.images.length > 0 && currentImageIndex >= item.images.length) {
-      setCurrentImageIndex(0)
-    }
-  }, [item, currentImageIndex])
-
-  // Debug: Log item state changes
-  useEffect(() => {
-    console.log("Item state updated:", item)
-  }, [item])
-  const [bookingData, setBookingData] = useState({
-    startDate: "",
-    endDate: "",
-    duration: 1,
-    specialRequests: "",
-  })
+  const [isFavorite, setIsFavorite] = useState(false)
 
   useEffect(() => {
     const fetchItem = async () => {
@@ -53,16 +24,11 @@ export default function BookingPage() {
         const response = await apiClient.getItemById(params.id as string)
         console.log("Item response:", response)
 
-        // Handle the nested response structure
         if (response && (response as any).item) {
-          console.log("Setting item from response.item:", (response as any).item)
           setItem((response as any).item as Item)
         } else if (response && (response as any)._id) {
-          // If response is already the item object
-          console.log("Setting item from response directly:", response)
           setItem(response as Item)
         } else {
-          console.log("Invalid response structure:", response)
           setError("Invalid item data received")
         }
       } catch (err) {
@@ -78,27 +44,6 @@ export default function BookingPage() {
     }
   }, [params.id])
 
-  const handleBooking = async (e: React.FormEvent) => {
-    e.preventDefault()
-    try {
-      // Handle booking logic here
-      console.log("Booking data:", bookingData)
-      console.log("Item ID:", params.id)
-
-      // You can add API call here to submit booking
-      // await apiClient.createBooking({
-      //   itemId: params.id as string,
-      //   ...bookingData
-      // })
-
-      alert("Booking request submitted! We will contact you soon.")
-      router.push("/dashboard")
-    } catch (error) {
-      console.error("Booking error:", error)
-      alert("Failed to submit booking. Please try again.")
-    }
-  }
-
   const nextImage = () => {
     if (item?.images && item.images.length > 0) {
       setCurrentImageIndex((prev) => (prev + 1) % item.images.length)
@@ -111,12 +56,27 @@ export default function BookingPage() {
     }
   }
 
+  const formatPrice = (price: number, currency: string = "Frw") => {
+    return `${currency} ${price.toLocaleString()}`
+  }
+
+  const formatLocation = (location: any) => {
+    if (typeof location === "string") return location
+    if (typeof location === "object" && location) {
+      const parts = []
+      if (location.city) parts.push(location.city)
+      if (location.district) parts.push(location.district)
+      return parts.join(", ") || "Location not specified"
+    }
+    return "Location not specified"
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading   details...</p>
+          <p className="mt-4 text-gray-600">Loading car details...</p>
         </div>
       </div>
     )
@@ -149,19 +109,15 @@ export default function BookingPage() {
             </div>
             <nav className="flex space-x-8">
               <a href="/dashboard" className="text-gray-600 hover:text-red-600 px-3 py-2 text-sm font-medium">
-                📊 Dashboard
+                Dashboard
               </a>
-              <a href="/dashboard" className="text-red-600 px-3 py-2 text-sm font-medium">
-                📊 Dashboard
-              </a>
-
-              <a href="/dashboard" className="text-gray-600 hover:text-red-600 px-3 py-2 text-sm font-medium">
-                👤 Profile
+              <a href="/search" className="text-gray-600 hover:text-red-600 px-3 py-2 text-sm font-medium">
+                Search
               </a>
               <Button
                 variant="outline"
                 size="sm"
-                className="text-red-600 border-red-600 hover:bg-red-50 bg-transparent"
+                className="text-red-600 border-red-600 hover:bg-red-50"
               >
                 Logout
               </Button>
@@ -184,190 +140,305 @@ export default function BookingPage() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Left Column -   Details */}
-          <div className="space-y-6">
-            {/* Item Header */}
-            <div className="bg-red-600 text-white p-6 rounded-t-lg">
-              <h1 className="text-2xl font-bold">{item.title || "Item Title"}</h1>
-              <p className="text-red-100 mt-2">
-                Status: {item.status === "ACTIVE" ? "Available for booking" : "Not available"}
-              </p>
-            </div>
-
-            {/* Item Image */}
-            <div className="relative bg-white rounded-b-lg overflow-hidden">
-              <div className="relative h-80">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left Column - Main Content */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Main Car Image Section */}
+            <div className="bg-white rounded-lg overflow-hidden">
+              <div className="relative h-96">
                 <img
-                  src={item.images?.[currentImageIndex] || "/placeholder.svg?height=320&width=600&query=car"}
-                  alt={item.title || "Item Image"}
+                  src={item.images?.[currentImageIndex] || "/placeholder.svg?height=400&width=600&query=car"}
+                  alt={item.title}
                   className="w-full h-full object-cover"
                 />
+                
+                {/* 360° View Button */}
+                <div className="absolute bottom-4 left-4">
+                  <Button variant="secondary" size="sm" className="bg-gray-800/80 text-white hover:bg-gray-800">
+                    <span className="mr-2">🔄</span>
+                    360° View
+                  </Button>
+                </div>
 
+                {/* Navigation Arrows */}
                 {item.images && item.images.length > 1 && (
                   <>
                     <button
                       onClick={prevImage}
-                      className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70"
+                      className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70"
                     >
                       <ChevronLeft className="w-5 h-5" />
                     </button>
                     <button
                       onClick={nextImage}
-                      className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70"
+                      className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70"
                     >
                       <ChevronRight className="w-5 h-5" />
                     </button>
-                    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-                      {item.images?.map((_, index) => (
-                        <div
-                          key={index}
-                          className={`w-2 h-2 rounded-full ${
-                            index === currentImageIndex ? "bg-white" : "bg-white bg-opacity-50"
-                          }`}
-                        />
-                      ))}
-                    </div>
                   </>
                 )}
               </div>
+
+              {/* Thumbnail Images */}
+              {item.images && item.images.length > 1 && (
+                <div className="p-4 flex gap-2">
+                  {item.images.slice(0, 2).map((image, index) => (
+                    <div key={index} className="relative w-24 h-16 rounded overflow-hidden">
+                      <img
+                        src={image}
+                        alt={`${item.title} ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                      {index === 1 && item.images.length > 2 && (
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white text-sm">
+                          +{item.images.length - 2}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
-            {/* Description */}
+            {/* Car Details Section */}
             <div className="bg-white rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Item Description</h3>
-              <p className="text-gray-600 leading-relaxed">{item.description || "No description available"}</p>
+              {/* Price and Actions */}
+              <div className="flex items-center justify-between mb-6">
+                <h1 className="text-3xl font-bold text-gray-900">
+                  {formatPrice(item.price, item.currency)}
+                </h1>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsFavorite(!isFavorite)}
+                    className={isFavorite ? "text-red-600 border-red-600" : ""}
+                  >
+                    <Heart className={`w-4 h-4 ${isFavorite ? "fill-red-600" : ""}`} />
+                  </Button>
+                  <Button variant="outline" size="sm">
+                    <Share2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+
+              {/* Car Title */}
+              <h2 className="text-2xl font-semibold text-gray-800 mb-4">{item.title}</h2>
+
+              {/* Basic Car Information */}
+              <div className="flex items-center gap-6 mb-6 text-sm text-gray-600">
+                {item.features?.year && (
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    {item.features.year}
+                  </div>
+                )}
+                {item.features?.mileage && (
+                  <div className="flex items-center gap-2">
+                    <Gauge className="w-4 h-4" />
+                    {item.features.mileage.toLocaleString()} km
+                  </div>
+                )}
+                {item.features?.transmission && (
+                  <div className="flex items-center gap-2">
+                    <SteeringWheel className="w-4 h-4" />
+                    {item.features.transmission}
+                  </div>
+                )}
+                <div className="flex items-center gap-2">
+                  <Globe className="w-4 h-4" />
+                  GCC Specs
+                </div>
+              </div>
+
+              {/* Warranty Badge */}
+              <div className="mb-6">
+                <span className="inline-flex items-center gap-2 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+                  <CheckCircle className="w-4 h-4" />
+                  Dealer Warranty
+                </span>
+              </div>
+
+              {/* Car Overview */}
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Car Overview</h3>
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <div>
+                      <span className="text-sm text-gray-500">Interior Color</span>
+                      <p className="font-medium">Tan</p>
+                    </div>
+                    <div>
+                      <span className="text-sm text-gray-500">Exterior Color</span>
+                      <p className="font-medium">Grey</p>
+                    </div>
+                    <div>
+                      <span className="text-sm text-gray-500">Body Type</span>
+                      <p className="font-medium">Sedan</p>
+                    </div>
+                    <div>
+                      <span className="text-sm text-gray-500">Seating Capacity</span>
+                      <p className="font-medium">5 Seater</p>
+                    </div>
+                    <div>
+                      <span className="text-sm text-gray-500">Transmission Type</span>
+                      <p className="font-medium">{item.features?.transmission || "Automatic"}</p>
+                    </div>
+                    <div>
+                      <span className="text-sm text-gray-500">Seller type</span>
+                      <p className="font-medium">Dealer</p>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <div>
+                      <span className="text-sm text-gray-500">Horsepower</span>
+                      <p className="font-medium">200 - 299 HP</p>
+                    </div>
+                    <div>
+                      <span className="text-sm text-gray-500">Doors</span>
+                      <p className="font-medium">4 door</p>
+                    </div>
+                    <div>
+                      <span className="text-sm text-gray-500">Target Market</span>
+                      <p className="font-medium">UAE (can be exported)</p>
+                    </div>
+                    <div>
+                      <span className="text-sm text-gray-500">No. of Cylinders</span>
+                      <p className="font-medium">4</p>
+                    </div>
+                    <div>
+                      <span className="text-sm text-gray-500">Engine Capacity (cc)</span>
+                      <p className="font-medium">2000 - 2499 cc</p>
+                    </div>
+                    <div>
+                      <span className="text-sm text-gray-500">Trim</span>
+                      <p className="font-medium">{item.features?.model || "E 300"}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Warranty and Price Details */}
+              <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                <p className="font-semibold text-gray-900 mb-2">
+                  (5 Years Warranty Or 105K KM @Official Dealer) {item.features?.year || "2025"} {item.features?.brand || "MERCEDES-BENZ"} {item.features?.model || "E 300"} 2.0L RWD GCC 0Km
+                </p>
+                <p className="text-gray-700 mb-2">5 Years Warranty Or 105,000 At Official Dealer</p>
+                <p className="text-gray-700">
+                  Price: ({formatPrice(item.price, item.currency)}), (${(item.price / 3.67).toLocaleString()})
+                </p>
+                <button className="text-red-600 hover:text-red-700 text-sm font-medium mt-2">
+                  Read More
+                </button>
+              </div>
+
+              <p className="text-sm text-gray-500">
+                Posted on: {new Date(item.createdAt).toLocaleDateString('en-US', { 
+                  day: 'numeric', 
+                  month: 'long', 
+                  year: 'numeric' 
+                })}
+              </p>
+            </div>
+
+            {/* Features Section */}
+            <div className="bg-white rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Features</h3>
+              <div className="mb-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-medium text-gray-800">Drivers Assistance & Safety</h4>
+                  <span className="text-sm text-gray-500">8 ↗</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    "Anti-Lock Brakes/ABS",
+                    "Dual Exhaust",
+                    "Power Steering",
+                    "Side Airbags",
+                    "Cruise Control",
+                    "Front Airbags",
+                    "Rear Wheel Drive",
+                    "Tiptronic Gears"
+                  ].map((feature, index) => (
+                    <div key={index} className="flex items-center gap-2 text-sm">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      {feature}
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
 
-                      {/* Right Column - Booking Section */}
-            <div className="space-y-6">
-              {/* Book Now Button */}
-              <div className="bg-red-600 text-white p-6 rounded-t-lg">
-                <h2 className="text-2xl font-bold mb-4">Book This Item</h2>
-                {item.bookingUrl ? (
-                  <a
-                    href={item.bookingUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-block"
-                  >
-                    <Button className="w-full bg-white text-red-600 hover:bg-gray-100 py-4 text-lg font-semibold">
-                      📋 Book Now
-                    </Button>
-                  </a>
-                ) : (
-                  <div className="text-center py-4">
-                    <p className="text-red-100 mb-3">Booking form not available</p>
-                    <p className="text-sm text-red-200">Please contact the seller directly</p>
-                  </div>
-                )}
-              </div>
-
-              {/* Item Specifications */}
-              <div className="bg-white rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Item Specifications</h3>
-
-                {/* Common Specifications */}
-                <div className="grid grid-cols-2 gap-6 mb-6">
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500">Category</h3>
-                    <p className="text-lg font-semibold text-gray-900">{item.category || "N/A"}</p>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500">Subcategory</h3>
-                    <p className="text-lg font-semibold text-gray-900">{item.subcategory || "N/A"}</p>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500">Price</h3>
-                    <p className="text-lg font-semibold text-gray-900">
-                      {item.currency || "Frw"} {item.price ? item.price.toLocaleString() : "N/A"}
-                    </p>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-500">Status</h3>
-                    <p className="text-lg font-semibold text-gray-900">{item.status || "N/A"}</p>
-                  </div>
-                </div>
-
-                {/* Category-specific Specifications */}
-                {item.category === "MOTORS" && (
-                  <div className="border-t pt-4">
-                    <h4 className="text-md font-semibold text-gray-800 mb-3">Vehicle Details</h4>
-                    <div className="grid grid-cols-2 gap-6">
-                      <div>
-                        <h3 className="text-sm font-medium text-gray-500">Brand & Model</h3>
-                        <p className="text-lg font-semibold text-gray-900">
-                          {item.features?.brand || "N/A"} {item.features?.model || "N/A"}
-                        </p>
-                      </div>
-                      <div>
-                        <h3 className="text-sm font-medium text-gray-500">Year</h3>
-                        <p className="text-lg font-semibold text-gray-900">
-                          {item.features?.year ? item.features.year.toString() : "N/A"}
-                        </p>
-                      </div>
-                      <div>
-                        <h3 className="text-sm font-medium text-gray-500">Mileage</h3>
-                        <p className="text-lg font-semibold text-gray-900">
-                          {item.features?.mileage ? item.features.mileage.toLocaleString() : "N/A"} km
-                        </p>
-                      </div>
-                      <div>
-                        <h3 className="text-sm font-medium text-gray-500">Fuel Type</h3>
-                        <p className="text-lg font-semibold text-gray-900">{item.features?.fuelType || "N/A"}</p>
-                      </div>
-                      <div>
-                        <h3 className="text-sm font-medium text-gray-500">Transmission</h3>
-                        <p className="text-lg font-semibold text-gray-900">{item.features?.transmission || "N/A"}</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-
-              </div>
-
-            {/* Location & Contact */}
+          {/* Right Column - Sidebar */}
+          <div className="space-y-6">
+            {/* Seller Information */}
             <div className="bg-white rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Location & Contact</h3>
-              <div className="space-y-3">
-                <div className="flex items-center text-gray-600">
-                  <MapPin className="w-5 h-5 mr-3 text-red-600" />
-                  <span>
-                    {item.location?.address || "N/A"}, {item.location?.district || "N/A"}, {item.location?.city || "N/A"}
-                  </span>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 bg-red-600 rounded-lg flex items-center justify-center text-white font-bold">
+                  SOKO
                 </div>
-                <div className="flex items-center text-gray-600">
-                  <Phone className="w-5 h-5 mr-3 text-red-600" />
-                  <span>{item.contactInfo?.phone || "N/A"}</span>
-                </div>
-                <div className="flex items-center text-gray-600">
-                  <Mail className="w-5 h-5 mr-3 text-red-600" />
-                  <span>{item.contactInfo?.email || "N/A"}</span>
+                <div>
+                  <h3 className="font-semibold text-gray-900">SOKOGO Group L.L.C</h3>
+                  <div className="flex items-center gap-1">
+                    <CheckCircle className="w-4 h-4 text-blue-600" />
+                    <span className="text-sm text-gray-600">Verified</span>
+                  </div>
                 </div>
               </div>
+              <p className="text-sm text-gray-600 mb-4">Dealer</p>
+              <Button variant="outline" className="w-full">
+                View All Cars
+              </Button>
+            </div>
 
-              {/* Contact Information */}
-              <div className="bg-white rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Contact Seller</h3>
-                <div className="space-y-3">
-                  <div className="flex items-center text-gray-600">
-                    <Phone className="w-5 h-5 mr-3 text-red-600" />
-                    <span>{item.contactInfo?.phone || "N/A"}</span>
-                  </div>
-                  <div className="flex items-center text-gray-600">
-                    <Mail className="w-5 h-5 mr-3 text-red-600" />
-                    <span>{item.contactInfo?.email || "N/A"}</span>
-                  </div>
-                  <div className="flex items-center text-gray-600">
-                    <MapPin className="w-5 h-5 mr-3 text-red-600" />
-                    <span>
-                      {item.location?.address || "N/A"}, {item.location?.district || "N/A"}, {item.location?.city || "N/A"}
-                    </span>
-                  </div>
+            {/* Promotional Box */}
+            <div className="bg-blue-50 rounded-lg p-6">
+              <h3 className="font-semibold text-gray-900 mb-2">Become a verified user</h3>
+              <p className="text-sm text-gray-600 mb-4">
+                Push your ad to the top and get maximum exposure
+              </p>
+              <div className="flex items-center justify-between">
+                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                  <CheckCircle className="w-5 h-5 text-white" />
                 </div>
+                <Button className="bg-gray-800 hover:bg-gray-900">
+                  Get Started
+                </Button>
               </div>
+            </div>
+
+            {/* Contact Buttons */}
+            <div className="bg-white rounded-lg p-6">
+              <h3 className="font-semibold text-gray-900 mb-4">Contact Seller</h3>
+              <div className="flex gap-3">
+                <Button className="flex-1 bg-green-600 hover:bg-green-700">
+                  <Phone className="w-4 h-4 mr-2" />
+                  Call
+                </Button>
+                <Button className="flex-1 bg-green-500 hover:bg-green-600">
+                  <span className="mr-2">💬</span>
+                  WhatsApp
+                </Button>
+                <Button className="flex-1 bg-blue-600 hover:bg-blue-700">
+                  <span className="mr-2">💬</span>
+                  Chat
+                </Button>
+              </div>
+            </div>
+
+            {/* Inspection Ad */}
+            <div className="bg-gray-800 rounded-lg p-4 text-white">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-semibold mb-1">CARS INSPECTED</h3>
+                  <p className="text-sm text-gray-300">by SOKOGO</p>
+                </div>
+                <div className="w-16 h-12 bg-red-600 rounded"></div>
+              </div>
+              <Button className="w-full mt-4 bg-white text-gray-800 hover:bg-gray-100">
+                View Listings
+              </Button>
             </div>
           </div>
         </div>

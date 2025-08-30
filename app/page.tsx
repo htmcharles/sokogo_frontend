@@ -22,6 +22,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { apiClient, type Item } from "@/lib/api"
 import Link from "next/link"
 import { useAuth } from "@/contexts/AuthContext"
+import CarCard from "@/components/CarCard"
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -245,26 +246,7 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {carsData.length > 0 ? (
               carsData.map((car) => (
-                <div
-                  key={car._id}
-                  className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
-                >
-                  <img
-                    src={car.images[0] || "/placeholder.svg?height=200&width=300&query=car"}
-                    alt={car.title}
-                    className="w-full h-48 object-cover"
-                  />
-                  <div className="p-4">
-                    <p className="text-red-600 font-bold text-lg mb-1">{formatPrice(car.price)}</p>
-                    <h3 className="font-semibold text-gray-800 mb-2">{car.title}</h3>
-                    <p className="text-gray-600 text-sm">
-                      {car.location?.city && car.location?.district
-                        ? `${car.location.city}, ${car.location.district}`
-                        : car.location?.city || car.location?.district || 'Location not specified'
-                      }
-                    </p>
-                  </div>
-                </div>
+                <CarCard key={car._id} car={car} />
               ))
             ) : (
               <div className="col-span-full text-center py-8">

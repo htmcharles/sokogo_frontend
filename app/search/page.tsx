@@ -10,6 +10,7 @@ import Link from "next/link"
 import { useAuth } from "@/contexts/AuthContext"
 import { apiClient } from "@/lib/api"   // ✅ import your API client
 import type { Item } from "@/lib/api"
+import CarCard from "@/components/CarCard"
 
 export default function SearchPage() {
   const searchParams = useSearchParams()
@@ -168,37 +169,7 @@ export default function SearchPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {results.map((item) => (
-            <div
-              key={item._id}
-              className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
-            >
-              <img
-                src={item.images?.[0] || "/placeholder.svg"}
-                alt={item.title}
-                className="w-full h-48 object-cover"
-              />
-              <div className="p-4">
-                <p className="text-red-600 font-bold text-lg mb-1">
-                  {item.price} {item.currency || "Frw"}
-                </p>
-
-                {/* Common Title */}
-                <h3 className="font-semibold text-gray-800 mb-2">{item.title}</h3>
-
-                {/* Category-specific details */}
-                {item.category === "MOTORS" && (
-                  <p className="text-gray-600 text-sm">
-                    {item.features?.brand} • {item.features?.model} • {item.features?.year} •{" "}
-                    {item.features?.mileage} km
-                  </p>
-                )}
-
-                {/* Location */}
-                <p className="text-gray-500 text-sm mt-2">
-                  {item.location?.district}, {item.location?.city}
-                </p>
-              </div>
-            </div>
+            <CarCard key={item._id} car={item} />
           ))}
         </div>
 
