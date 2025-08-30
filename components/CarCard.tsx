@@ -126,16 +126,16 @@ export default function CarCard({ car, className = "" }: CarCardProps) {
                   {car.features.year}
                 </span>
               )}
-              {car.features.mileage && (
+              {(car.features.kilometers || car.features.mileage) && (
                 <span className="flex items-center gap-1">
                   <span>🛣️</span>
-                  {car.features.mileage.toLocaleString()} km
+                  {(car.features.kilometers || car.features.mileage)?.toLocaleString()} km
                 </span>
               )}
-              {car.features.transmission && (
+              {(car.features.transmissionType || car.features.transmission) && (
                 <span className="flex items-center gap-1">
                   <span>⚙️</span>
-                  {car.features.transmission}
+                  {car.features.transmissionType || car.features.transmission}
                 </span>
               )}
             </div>
