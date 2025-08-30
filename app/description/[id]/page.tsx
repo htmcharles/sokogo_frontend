@@ -156,7 +156,7 @@ export default function DescriptionPage() {
                   alt={item.title}
                   className="w-full h-full object-cover"
                 />
-                
+
                 {/* 360° View Button */}
                 <div className="absolute bottom-4 left-4">
                   <Button variant="secondary" size="sm" className="bg-gray-800/80 text-white hover:bg-gray-800">
@@ -329,8 +329,8 @@ export default function DescriptionPage() {
                   {item.features?.year || "N/A"} {item.features?.make || "N/A"} {item.features?.model || "N/A"} - {item.features?.bodyType || "N/A"}
                 </p>
                 <p className="text-gray-700 mb-2">
-                  {item.features?.warranty === "yes" ? "Warranty Available" : "No Warranty"} • 
-                  {item.features?.isInsuredInRwanda === "yes" ? " Insured in Rwanda" : " Not Insured in Rwanda"} • 
+                  {item.features?.warranty === "yes" ? "Warranty Available" : "No Warranty"} •
+                  {item.features?.isInsuredInRwanda === "yes" ? " Insured in Rwanda" : " Not Insured in Rwanda"} •
                   {item.features?.technicalControl === "yes" ? " Technical Control Passed" : " Technical Control Required"}
                 </p>
                 <p className="text-gray-700">
@@ -342,10 +342,10 @@ export default function DescriptionPage() {
               </div>
 
               <p className="text-sm text-gray-500">
-                Posted on: {new Date(item.createdAt).toLocaleDateString('en-US', { 
-                  day: 'numeric', 
-                  month: 'long', 
-                  year: 'numeric' 
+                Posted on: {new Date(item.createdAt).toLocaleDateString('en-US', {
+                  day: 'numeric',
+                  month: 'long',
+                  year: 'numeric'
                 })}
               </p>
             </div>
@@ -401,23 +401,6 @@ export default function DescriptionPage() {
                 View All Cars
               </Button>
             </div>
-
-            {/* Promotional Box */}
-            <div className="bg-blue-50 rounded-lg p-6">
-              <h3 className="font-semibold text-gray-900 mb-2">Become a verified user</h3>
-              <p className="text-sm text-gray-600 mb-4">
-                Push your ad to the top and get maximum exposure
-              </p>
-              <div className="flex items-center justify-between">
-                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                  <CheckCircle className="w-5 h-5 text-white" />
-                </div>
-                <Button className="bg-gray-800 hover:bg-gray-900">
-                  Get Started
-                </Button>
-              </div>
-            </div>
-
             {/* Contact Buttons */}
             <div className="bg-white rounded-lg p-6">
               <h3 className="font-semibold text-gray-900 mb-4">Contact Seller</h3>
@@ -435,20 +418,6 @@ export default function DescriptionPage() {
                   Chat
                 </Button>
               </div>
-            </div>
-
-            {/* Inspection Ad */}
-            <div className="bg-gray-800 rounded-lg p-4 text-white">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-semibold mb-1">CARS INSPECTED</h3>
-                  <p className="text-sm text-gray-300">by SOKOGO</p>
-                </div>
-                <div className="w-16 h-12 bg-red-600 rounded"></div>
-              </div>
-              <Button className="w-full mt-4 bg-white text-gray-800 hover:bg-gray-100">
-                View Listings
-              </Button>
             </div>
           </div>
         </div>
