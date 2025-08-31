@@ -9,6 +9,7 @@ export interface User {
   email: string
   phoneNumber: string
   role: "buyer" | "seller" | "admin"
+  createdAt?: string
 }
 
 export interface LoginResponse {
@@ -64,6 +65,11 @@ export interface Item {
     seatingCapacity?: number
     horsePower?: number
     cruiseControl?: boolean
+    frontAirbags?: boolean
+    sideAirbags?: boolean
+    powerSteering?: boolean
+    frontWheelDrive?: boolean
+    antiLockBrakesABS?: boolean
   }
   contactInfo?: {
     phone?: string
@@ -84,22 +90,35 @@ class ApiClient {
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl
     // Get user ID from localStorage if available
+    this.refreshUserId()
+  }
+
+  private refreshUserId() {
     if (typeof window !== "undefined") {
       this.userId = localStorage.getItem("userId")
+      console.log("[v0] Refreshed user ID from localStorage:", this.userId)
     }
   }
 
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`
-    const headers: HeadersInit = {
+    
+    // Create headers object
+    const headers: Record<string, string> = {
       "Content-Type": "application/json",
       Accept: "application/json",
-      ...options.headers,
     }
 
     // Add user ID to headers if available
     if (this.userId) {
       headers["userid"] = this.userId
+    }
+
+    // Merge with existing headers from options
+    if (options.headers) {
+      if (typeof options.headers === 'object' && !Array.isArray(options.headers)) {
+        Object.assign(headers, options.headers)
+      }
     }
 
     console.log("[v0] Making API request to:", url)
@@ -209,13 +228,13 @@ class ApiClient {
     subcategory: string
     price: number
     currency: string
-    location: {
+    location?: {
       district: string
       city: string
       address: string
     }
-    images: string[]
-    features: {
+    images?: string[]
+    features?: {
       // For motors
       brand?: string
       model?: string
@@ -237,12 +256,18 @@ class ApiClient {
       seatingCapacity?: number
       horsePower?: number
       cruiseControl?: boolean
-    }
-    contactInfo: {
-      phone: string
-      email: string
+      frontAirbags?: boolean
+      sideAirbags?: boolean
+      powerSteering?: boolean
+      frontWheelDrive?: boolean
+      antiLockBrakesABS?: boolean
     }
   }): Promise<{ message: string; item: Item }> {
+    // Ensure user is authenticated before creating item
+    if (!this.ensureAuthenticated()) {
+      throw new Error("User must be logged in to create items")
+    }
+
     return this.request<{ message: string; item: Item }>("/items", {
       method: "POST",
       body: JSON.stringify(itemData),
@@ -250,6 +275,11 @@ class ApiClient {
   }
 
   async getMyItems(): Promise<{ items: Item[] }> {
+    // Ensure user is authenticated before fetching items
+    if (!this.ensureAuthenticated()) {
+      throw new Error("User must be logged in to fetch items")
+    }
+
     return this.request<{ items: Item[] }>("/items/seller/my-items")
   }
 
@@ -294,6 +324,10 @@ class ApiClient {
     return this.request<User>(`/auth/profile?email=${encodeURIComponent(email)}`)
   }
 
+  async getUserById(userId: string): Promise<{ message: string; user: User }> {
+    return this.request<{ message: string; user: User }>(`/auth/users/${userId}`)
+  }
+
   // Utility methods
   setUserId(userId: string) {
     this.userId = userId
@@ -319,7 +353,19 @@ class ApiClient {
   }
 
   isAuthenticated(): boolean {
+    // Refresh user ID from localStorage before checking
+    this.refreshUserId()
     return this.userId !== null
+  }
+
+  // Method to ensure user ID is set before making authenticated requests
+  ensureAuthenticated(): boolean {
+    this.refreshUserId()
+    if (!this.userId) {
+      console.error("[v0] No user ID found. User must be logged in.")
+      return false
+    }
+    return true
   }
 }
 

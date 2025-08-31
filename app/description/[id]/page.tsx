@@ -5,12 +5,15 @@ import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { ArrowLeft, ChevronLeft, ChevronRight, Phone, Mail, MapPin, Heart, Share2, CheckCircle, Calendar, Gauge, Globe } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { apiClient, type Item } from "@/lib/api"
+import { apiClient, type Item, type User } from "@/lib/api"
+import { useAuth } from "@/contexts/AuthContext"
 
 export default function DescriptionPage() {
   const params = useParams()
   const router = useRouter()
+  const { user, isAuthenticated } = useAuth()
   const [item, setItem] = useState<Item | null>(null)
+  const [seller, setSeller] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
@@ -27,11 +30,43 @@ export default function DescriptionPage() {
         // Handle the API response structure: { message: string, item: Item }
         if (response && (response as any).item) {
           console.log("Setting item from response.item:", (response as any).item)
-          setItem((response as any).item as Item)
+          const itemData = (response as any).item as Item
+          setItem(itemData)
+          
+          // Fetch seller details if seller is a string (user ID)
+          if (typeof itemData.seller === "string") {
+            try {
+              const sellerResponse = await apiClient.getUserById(itemData.seller)
+              if (sellerResponse && sellerResponse.user) {
+                setSeller(sellerResponse.user)
+              }
+            } catch (sellerError) {
+              console.error("Error fetching seller details:", sellerError)
+            }
+          } else if (typeof itemData.seller === "object" && itemData.seller) {
+            // Seller is already populated
+            setSeller(itemData.seller as User)
+          }
         } else if (response && (response as any)._id) {
           // Fallback: If response is already the item object
           console.log("Setting item from response directly:", response)
-          setItem(response as Item)
+          const itemData = response as Item
+          setItem(itemData)
+          
+          // Fetch seller details if seller is a string (user ID)
+          if (typeof itemData.seller === "string") {
+            try {
+              const sellerResponse = await apiClient.getUserById(itemData.seller)
+              if (sellerResponse && sellerResponse.user) {
+                setSeller(sellerResponse.user)
+              }
+            } catch (sellerError) {
+              console.error("Error fetching seller details:", sellerError)
+            }
+          } else if (typeof itemData.seller === "object" && itemData.seller) {
+            // Seller is already populated
+            setSeller(itemData.seller as User)
+          }
         } else {
           console.log("Invalid response structure:", response)
           setError("Invalid item data received")
@@ -141,6 +176,8 @@ export default function DescriptionPage() {
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back
         </Button>
+         
+
       </div>
 
       {/* Main Content */}
@@ -204,13 +241,37 @@ export default function DescriptionPage() {
                 </div>
               )}
             </div>
+                        {/* Product Description Section */}
+            <div className="bg-white rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Product Description</h3>
+              <div className="prose prose-sm max-w-none">
+                <p className="text-gray-700 leading-relaxed">
+                  {item.description || "No detailed description available for this vehicle."}
+                </p>
+              </div>
+            </div>
+
             {/* Features Section */}
             <div className="bg-white rounded-lg p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Features</h3>
               <div className="mb-4">
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="font-medium text-gray-800">Vehicle Features</h4>
-                  <span className="text-sm text-gray-500">6 ↗</span>
+                  <span className="text-sm text-gray-500">
+                    {[
+                      item.features?.cruiseControl,
+                      item.features?.technicalControl === "yes",
+                      item.features?.isInsuredInRwanda === "yes",
+                      item.features?.warranty === "yes",
+                      item.features?.steeringSide,
+                      item.features?.fuelType,
+                      item.features?.frontAirbags,
+                      item.features?.sideAirbags,
+                      item.features?.powerSteering,
+                      item.features?.frontWheelDrive,
+                      item.features?.antiLockBrakesABS
+                    ].filter(Boolean).length} ↗
+                  </span>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   {[
@@ -219,7 +280,12 @@ export default function DescriptionPage() {
                     item.features?.isInsuredInRwanda === "yes" ? "Insured in Rwanda" : null,
                     item.features?.warranty === "yes" ? "Warranty Available" : null,
                     item.features?.steeringSide ? `${item.features.steeringSide} Hand Drive` : null,
-                    item.features?.fuelType ? `${item.features.fuelType} Fuel` : null
+                    item.features?.fuelType ? `${item.features.fuelType} Fuel` : null,
+                    item.features?.frontAirbags ? "Front Airbags" : null,
+                    item.features?.sideAirbags ? "Side Airbags" : null,
+                    item.features?.powerSteering ? "Power Steering" : null,
+                    item.features?.frontWheelDrive ? "Front Wheel Drive" : null,
+                    item.features?.antiLockBrakesABS ? "Anti-Lock Brakes (ABS)" : null
                   ].filter(Boolean).map((feature, index) => (
                     <div key={index} className="flex items-center gap-2 text-sm">
                       <CheckCircle className="w-4 h-4 text-green-600" />
@@ -231,48 +297,109 @@ export default function DescriptionPage() {
                   <p className="text-gray-500 text-sm">No specific features listed</p>
                 )}
               </div>
-                      </div>
+            </div>
                                   {/* Seller Information */}
             <div className="bg-white rounded-lg p-6">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-12 h-12 bg-red-600 rounded-lg flex items-center justify-center text-white font-bold">
-                  SOKO
+                  {seller ? `${seller.firstName?.charAt(0)}${seller.lastName?.charAt(0)}` : "SOKO"}
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">SOKOGO Group L.L.C</h3>
-                  <div className="flex items-center gap-1">
+                  <h3 className="font-semibold text-gray-900">
+                    {seller ? `${seller.firstName} ${seller.lastName}` : "SOKOGO Group L.L.C"}
+                  </h3>
+                  {/* <div className="flex items-center gap-1">
                     <CheckCircle className="w-4 h-4 text-blue-600" />
                     <span className="text-sm text-gray-600">Verified</span>
-                  </div>
+                  </div> */}
                 </div>
               </div>
-              <p className="text-sm text-gray-600 mb-4">Dealer</p>
-              <Button variant="outline" className="w-full">
-                View All Cars
+              <p className="text-sm text-gray-600 mb-4">
+                {seller?.role === "seller" ? "Dealer" : seller?.role || "Seller"}
+              </p>
+              {seller?.phoneNumber && (
+                <p className="text-sm text-gray-600 mb-2">
+                  📞 {seller.phoneNumber}
+                </p>
+              )}
+              {seller?.email && (
+                <p className="text-sm text-gray-600 mb-4">
+                  ✉️ {seller.email}
+                </p>
+              )}
+              
+              {/* Seller Description */}
+              {seller && (
+                <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                  <h4 className="font-medium text-gray-900 mb-2">About the Seller</h4>
+                  <p className="text-sm text-gray-600">
+                    {seller.firstName} {seller.lastName} is a verified {seller.role === "seller" ? "dealer" : seller.role} on SOKOGO. 
+                    {seller.role === "seller" ? " They specialize in quality vehicles and provide excellent customer service." : ""}
+                  </p>
+                  <div className="mt-3 flex items-center justify-between text-xs text-gray-500">
+                    <span>Member since: {seller.createdAt ? new Date(seller.createdAt).toLocaleDateString() : "Recently"}</span>
+                    <div className="flex items-center gap-1">
+                      <span>⭐ 4.8</span>
+                      <span>(Verified)</span>
+                    </div>
+                  </div>
+                  <div className="mt-2 flex items-center gap-4 text-xs text-gray-600">
+                    <span>📞 Quick Response</span>
+                    <span>🚗 Quality Cars</span>
+                    <span>✅ Trusted Seller</span>
+                  </div>
+                </div>
+              )}
+              
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={() => {
+                  if (seller) {
+                    // Navigate to search page filtered by this seller
+                    const searchParams = new URLSearchParams()
+                    searchParams.set('seller', seller._id)
+                    router.push(`/search?${searchParams.toString()}`)
+                  }
+                }}
+              >
+                View All Cars by {seller?.firstName || "Seller"}
               </Button>
             </div>
             {/* Contact Buttons */}
             <div className="bg-white rounded-lg p-6">
               <h3 className="font-semibold text-gray-900 mb-4">Contact Seller</h3>
               <div className="flex gap-3">
-                <Button className="flex-1 bg-green-600 hover:bg-green-700">
+                <Button 
+                  className="flex-1 bg-green-600 hover:bg-green-700"
+                  onClick={() => seller?.phoneNumber && window.open(`tel:${seller.phoneNumber}`)}
+                  disabled={!seller?.phoneNumber}
+                >
                   <Phone className="w-4 h-4 mr-2" />
                   Call
                 </Button>
-                <Button className="flex-1 bg-green-500 hover:bg-green-600">
+                <Button 
+                  className="flex-1 bg-green-500 hover:bg-green-600"
+                  onClick={() => seller?.phoneNumber && window.open(`https://wa.me/${seller.phoneNumber.replace(/\D/g, '')}`)}
+                  disabled={!seller?.phoneNumber}
+                >
                   <span className="mr-2">💬</span>
                   WhatsApp
                 </Button>
-                <Button className="flex-1 bg-blue-600 hover:bg-blue-700">
-                  <span className="mr-2">💬</span>
-                  Chat
+                <Button 
+                  className="flex-1 bg-blue-600 hover:bg-blue-700"
+                  onClick={() => seller?.email && window.open(`mailto:${seller.email}`)}
+                  disabled={!seller?.email}
+                >
+                  <span className="mr-2">✉️</span>
+                  Email
                 </Button>
               </div>
             </div>
           </div>
 
           {/* Right Column - Sidebar */}
-                  <div className="space-y-6">
+            <div className="space-y-6">
                                   {/* Car Details Section */}
             <div className="bg-white rounded-lg p-6">
               {/* Price and Actions */}
@@ -291,8 +418,8 @@ export default function DescriptionPage() {
                   </Button>
                   <Button variant="outline" size="sm">
                     <Share2 className="w-4 h-4" />
-                  </Button>
-                </div>
+                    </Button>
+                  </div>
               </div>
 
               {/* Car Title */}
@@ -321,8 +448,8 @@ export default function DescriptionPage() {
                 <div className="flex items-center gap-2">
                   <Globe className="w-4 h-4" />
                   Rwanda Specs
+                  </div>
                 </div>
-              </div>
 
               {/* Warranty Badge */}
               <div className="mb-6">
@@ -335,61 +462,61 @@ export default function DescriptionPage() {
               {/* Car Overview */}
               <div className="mb-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Car Overview</h3>
-                <div className="grid grid-cols-2 gap-6">
+                    <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-3">
-                    <div>
+                      <div>
                       <span className="text-sm text-gray-500">Interior Color</span>
                       <p className="font-medium">{item.features?.interiorColor || "N/A"}</p>
-                    </div>
-                    <div>
+                      </div>
+                      <div>
                       <span className="text-sm text-gray-500">Exterior Color</span>
                       <p className="font-medium">{item.features?.exteriorColor || "N/A"}</p>
-                    </div>
-                    <div>
+                      </div>
+                      <div>
                       <span className="text-sm text-gray-500">Body Type</span>
                       <p className="font-medium">{item.features?.bodyType || "N/A"}</p>
-                    </div>
-                    <div>
+                      </div>
+                      <div>
                       <span className="text-sm text-gray-500">Seating Capacity</span>
                       <p className="font-medium">{item.features?.seatingCapacity || "N/A"} Seater</p>
-                    </div>
-                    <div>
+                      </div>
+                      <div>
                       <span className="text-sm text-gray-500">Transmission Type</span>
                       <p className="font-medium">{item.features?.transmissionType || "N/A"}</p>
-                    </div>
+                      </div>
                     <div>
                       <span className="text-sm text-gray-500">Steering Side</span>
                       <p className="font-medium">{item.features?.steeringSide || "N/A"}</p>
                     </div>
                   </div>
-                  <div className="space-y-3">
+              <div className="space-y-3">
                     <div>
                       <span className="text-sm text-gray-500">Horsepower</span>
                       <p className="font-medium">{item.features?.horsePower || "N/A"} HP</p>
-                    </div>
+                </div>
                     <div>
                       <span className="text-sm text-gray-500">Doors</span>
                       <p className="font-medium">{item.features?.doors || "N/A"} door{item.features?.doors !== 1 ? "s" : ""}</p>
-                    </div>
+                </div>
                     <div>
                       <span className="text-sm text-gray-500">Fuel Type</span>
                       <p className="font-medium">{item.features?.fuelType || "N/A"}</p>
-                    </div>
+                </div>
                     <div>
                       <span className="text-sm text-gray-500">Make</span>
                       <p className="font-medium">{item.features?.make || "N/A"}</p>
-                    </div>
+              </div>
                     <div>
                       <span className="text-sm text-gray-500">Model</span>
                       <p className="font-medium">{item.features?.model || "N/A"}</p>
-                    </div>
+                  </div>
                     <div>
                       <span className="text-sm text-gray-500">Warranty</span>
                       <p className="font-medium">{item.features?.warranty === "yes" ? "Yes" : "No"}</p>
-                    </div>
                   </div>
                 </div>
               </div>
+            </div>
 
               {/* Warranty and Price Details */}
               <div className="mb-6 p-4 bg-gray-50 rounded-lg">

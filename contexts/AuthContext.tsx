@@ -36,6 +36,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const currentUser = apiClient.getCurrentUser()
         if (currentUser) {
           setUser(currentUser)
+          // Ensure the API client has the user ID set
+          apiClient.setUserId(currentUser._id)
         }
       } catch (error) {
         console.error("Error checking auth status:", error)
@@ -53,6 +55,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const response = await apiClient.login(email, password)
       setUser(response.user)
+      
+      // Ensure the API client has the user ID set
+      apiClient.setUserId(response.user._id)
 
       // Automatic role-based redirects
       if (typeof window !== "undefined") {
