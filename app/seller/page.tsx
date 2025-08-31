@@ -25,7 +25,7 @@ export default function SellerDashboard() {
       if (!isSeller || !user) return
       try {
         setIsLoading(true)
-        const response = await apiClient.getPopularItems("MOTORS")
+        const response = await apiClient.getMyItems()
         setProducts(response.items)
       } catch (error) {
         console.error("Failed to fetch seller products:", error)
