@@ -55,7 +55,7 @@ export default function CompleteProfile() {
       console.log("[v0] Google user created successfully:", response)
 
       const userData = {
-        _id: response.user?._id || "temp-id",
+        _id: response.user?._id || "",
         firstName,
         lastName,
         email: session.user.email,
@@ -67,6 +67,11 @@ export default function CompleteProfile() {
 
       if (typeof window !== "undefined") {
         localStorage.setItem("user", JSON.stringify(userData))
+        // Also set the userId in localStorage and apiClient
+        if (response.user?._id) {
+          localStorage.setItem("userId", response.user._id)
+          apiClient.setUserId(response.user._id)
+        }
       }
 
       router.push("/seller")

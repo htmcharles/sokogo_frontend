@@ -190,13 +190,14 @@ export default function Home() {
       <div
         className="relative h-72 bg-cover bg-center"
         style={{
-          backgroundImage: `url('/cityscape-background.jpg')`,
+          backgroundImage: `url('/cityscape-background.jpeg')`,
         }}
       >
-        <div className="absolute inset-0 bg-black bg-opacity-30"></div>
+        <div className="absolute "></div>
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex flex-col justify-center">
           <div className="text-white mb-8">
-            <p className="text-lg mb-4">Searching in</p>
+            <h1 className="text-4xl font-bold mb-4">Find Your Perfect Car</h1>
+            <p className="text-xl mb-4">Searching in</p>
 
             {/* Category Tabs */}
             <div className="flex space-x-4 mb-6">
@@ -212,18 +213,18 @@ export default function Home() {
           </div>
 
           {/* Search Bar */}
-          <form onSubmit={handleSearch} className="flex gap-4">
+          <form onSubmit={handleSearch} className="flex gap-4 max-w-2xl">
             <div className="flex-1 relative">
               <Input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search for anything"
-                className="w-full h-12 pl-4 pr-12 rounded-full border-0 text-white"
+                placeholder="Search for cars, brands, models..."
+                className="w-full h-14 pl-6 pr-12 rounded-full border-0 text-gray-900 bg-white/95 backdrop-blur-sm shadow-lg"
               />
-              <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500" />
             </div>
-            <Button type="submit" className="bg-red-600 hover:bg-red-700 text-white px-8 h-12 rounded-full">
+            <Button type="submit" className="bg-red-600 hover:bg-red-700 text-white px-8 h-14 rounded-full shadow-lg font-semibold">
               Search
             </Button>
           </form>
