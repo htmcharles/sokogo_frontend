@@ -25,6 +25,8 @@ export default function SellerDashboard() {
       if (!isSeller || !user) return
       try {
         setIsLoading(true)
+        console.log("[v0] Fetching seller products for user:", user._id)
+        console.log("[v0] API client authenticated:", apiClient.isAuthenticated())
         const response = await apiClient.getMyItems()
         setProducts(response.items)
       } catch (error) {
@@ -75,7 +77,7 @@ export default function SellerDashboard() {
         </header>
 
         {/* Stats and Products */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">          
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <Card className="bg-white border-gray-200">

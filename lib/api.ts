@@ -95,7 +95,26 @@ class ApiClient {
 
   private refreshUserId() {
     if (typeof window !== "undefined") {
+      // First try to get from localStorage
       this.userId = localStorage.getItem("userId")
+      
+      // If no userId in localStorage, try to get from user object
+      if (!this.userId) {
+        const userStr = localStorage.getItem("user")
+        if (userStr) {
+          try {
+            const user = JSON.parse(userStr)
+            if (user._id && user._id !== "temp-id") {
+              this.userId = user._id
+              localStorage.setItem("userId", user._id)
+              console.log("[v0] Set userId from user object:", this.userId)
+            }
+          } catch (error) {
+            console.error("[v0] Error parsing user from localStorage:", error)
+          }
+        }
+      }
+      
       console.log("[v0] Refreshed user ID from localStorage:", this.userId)
     }
   }
@@ -330,9 +349,14 @@ class ApiClient {
 
   // Utility methods
   setUserId(userId: string) {
-    this.userId = userId
-    if (typeof window !== "undefined") {
-      localStorage.setItem("userId", userId)
+    if (userId && userId !== "temp-id") {
+      this.userId = userId
+      if (typeof window !== "undefined") {
+        localStorage.setItem("userId", userId)
+        console.log("[v0] Set userId:", userId)
+      }
+    } else {
+      console.warn("[v0] Attempted to set invalid userId:", userId)
     }
   }
 
@@ -361,10 +385,14 @@ class ApiClient {
   // Method to ensure user ID is set before making authenticated requests
   ensureAuthenticated(): boolean {
     this.refreshUserId()
-    if (!this.userId) {
-      console.error("[v0] No user ID found. User must be logged in.")
+    if (!this.userId || this.userId === "temp-id") {
+      console.error("[v0] No valid user ID found. User must be logged in.")
+      console.error("[v0] Current userId:", this.userId)
+      console.error("[v0] localStorage userId:", typeof window !== "undefined" ? localStorage.getItem("userId") : "N/A")
+      console.error("[v0] localStorage user:", typeof window !== "undefined" ? localStorage.getItem("user") : "N/A")
       return false
     }
+    console.log("[v0] User authenticated with ID:", this.userId)
     return true
   }
 }
