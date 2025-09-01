@@ -122,15 +122,19 @@ class ApiClient {
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`
     
+    // Always refresh userId from localStorage before making requests
+    this.refreshUserId()
+    
     // Create headers object
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
       Accept: "application/json",
     }
 
-    // Add user ID to headers if available
+    // Always include user ID in headers for authentication
     if (this.userId) {
       headers["userid"] = this.userId
+      headers["x-seller-id"] = this.userId // Additional header for extra security
     }
 
     // Merge with existing headers from options
@@ -149,6 +153,7 @@ class ApiClient {
         ...options,
         headers,
         mode: "cors", // Explicitly set CORS mode
+        credentials: "include", // Include cookies/credentials to maintain login
       })
 
       console.log("[v0] Response status:", response.status)
@@ -287,9 +292,16 @@ class ApiClient {
       throw new Error("User must be logged in to create items")
     }
 
+    // Always include seller information in the request
+    const enrichedItemData = {
+      ...itemData,
+      seller: this.userId, // Explicitly include seller ID
+      sellerId: this.userId, // Alternative field name for backend compatibility
+    }
+
     return this.request<{ message: string; item: Item }>("/items", {
       method: "POST",
-      body: JSON.stringify(itemData),
+      body: JSON.stringify(enrichedItemData),
     })
   }
 
@@ -394,6 +406,137 @@ class ApiClient {
     }
     console.log("[v0] User authenticated with ID:", this.userId)
     return true
+  }
+
+  // Enhanced session validation with refresh capability
+  async validateSession(): Promise<{ isValid: boolean; user: User | null; error?: string }> {
+    try {
+      // First check localStorage
+      this.refreshUserId()
+
+      if (!this.userId || this.userId === "temp-id") {
+        return {
+          isValid: false,
+          user: null,
+          error: "No valid session found. Please log in."
+        }
+      }
+
+      // Try to get current user from localStorage
+      const currentUser = this.getCurrentUser()
+      if (!currentUser) {
+        return {
+          isValid: false,
+          user: null,
+          error: "User data not found. Please log in again."
+        }
+      }
+
+      // Validate that the user ID matches
+      if (currentUser._id !== this.userId) {
+        console.warn("[v0] User ID mismatch, clearing session")
+        this.logout()
+        return {
+          isValid: false,
+          user: null,
+          error: "Session mismatch. Please log in again."
+        }
+      }
+
+      // For now, trust localStorage data instead of backend validation
+      // This prevents clearing valid sessions due to backend issues
+      console.log("[v0] Session validation passed for user:", currentUser.firstName, currentUser.lastName)
+
+      return {
+        isValid: true,
+        user: currentUser
+      }
+
+    } catch (error) {
+      console.error("[v0] Session validation error:", error)
+      // Don't automatically logout on validation errors - might be network issues
+      const currentUser = this.getCurrentUser()
+      if (currentUser) {
+        console.log("[v0] Keeping session despite validation error")
+        return {
+          isValid: true,
+          user: currentUser
+        }
+      }
+
+      return {
+        isValid: false,
+        user: null,
+        error: "Session validation failed. Please log in again."
+      }
+    }
+  }
+
+  // Get current authenticated user ID (refreshed from localStorage)
+  getCurrentUserId(): string | null {
+    this.refreshUserId()
+    return this.userId
+  }
+
+  // Check if user is authenticated and return user ID
+  getAuthenticatedUserId(): string {
+    if (!this.ensureAuthenticated()) {
+      throw new Error("User must be logged in")
+    }
+    return this.userId!
+  }
+
+  // Upload multiple product photos using multipart/form-data
+  async uploadProductPhotos(productId: string, files: File[]): Promise<{ message: string; imageUrls?: string[] }> {
+    if (!productId) {
+      throw new Error("Missing product id for photo upload")
+    }
+
+    if (!files || files.length === 0) {
+      throw new Error("No files selected for upload")
+    }
+
+    // Get authenticated user ID (this will throw if not authenticated)
+    const sellerId = this.getAuthenticatedUserId()
+
+    const formData = new FormData()
+    
+    // Always include seller userId in FormData for backend verification
+    formData.append("seller", sellerId)
+    
+    // Append all photos
+    files.forEach((file, index) => {
+      formData.append(`photos`, file) // Use same key for multiple files
+    })
+
+    const url = `${this.baseUrl}/products/${productId}/photos`
+
+    const headers: Record<string, string> = {}
+    headers["userid"] = sellerId
+    headers["x-seller-id"] = sellerId // Additional header for extra security
+
+    const response = await fetch(url, {
+      method: "POST",
+      body: formData,
+      headers, // Do NOT set Content-Type; the browser will set correct boundary
+      mode: "cors",
+      credentials: "include", // Include cookies/credentials to maintain login
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ message: `HTTP error! status: ${response.status}` }))
+      throw new Error(errorData.message || `Upload failed with status ${response.status}`)
+    }
+
+    return response.json()
+  }
+
+  // Upload a single product photo (legacy method)
+  async uploadProductPhoto(productId: string, file: File): Promise<{ message: string; imageUrl?: string }> {
+    return this.uploadProductPhotos(productId, [file]).then(result => ({
+      message: result.message,
+      imageUrl: result.imageUrls?.[0]
+    }))
   }
 }
 

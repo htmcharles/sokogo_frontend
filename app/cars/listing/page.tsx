@@ -7,14 +7,16 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { Camera, ChevronRight, Home, ArrowLeft } from "lucide-react"
+import { Camera, ChevronRight, Home, ArrowLeft, Loader2, X, Upload } from "lucide-react"
 import Link from "next/link"
 import { useState, useEffect } from "react"
 import { apiClient } from "@/lib/api"
 import { useRouter } from "next/navigation"
+import { useToast } from "@/hooks/use-toast"
 
 function FinalListingForm() {
   const router = useRouter()
+  const { toast } = useToast()
   const [previousData, setPreviousData] = useState<any>(null)
   const [formData, setFormData] = useState({
     fuelType: "",
@@ -29,6 +31,12 @@ function FinalListingForm() {
     title: "",
     description: "",
   })
+
+  // Image upload state
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([])
+  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([])
+  const [isUploading, setIsUploading] = useState(false)
+  const [isDragOver, setIsDragOver] = useState(false)
 
   const [technicalFeatures, setTechnicalFeatures] = useState({
     tiptronicGears: false,
@@ -51,6 +59,13 @@ function FinalListingForm() {
       setPreviousData(JSON.parse(savedData))
     }
   }, [])
+
+  // Cleanup preview URLs on unmount
+  useEffect(() => {
+    return () => {
+      imagePreviewUrls.forEach(url => URL.revokeObjectURL(url))
+    }
+  }, [imagePreviewUrls])
 
   const parsePrice = (priceBucket: string): number => {
     switch (priceBucket) {
@@ -146,12 +161,109 @@ function FinalListingForm() {
     }
 
     try {
+      // First create the item
       const res = await apiClient.createItem(payload as any)
-      alert("Listing published successfully!")
+      const itemId = res.item._id
+      
+      // Upload images if any are selected
+      if (selectedFiles.length > 0) {
+        try {
+          await uploadImages(itemId)
+        } catch (uploadError) {
+          // Item was created but image upload failed
+          toast({ 
+            title: "Listing created", 
+            description: "Product created but some images failed to upload. You can add them later." 
+          })
+        }
+      }
+      
+      toast({ 
+        title: "Success!", 
+        description: "Your listing has been published successfully." 
+      })
+      
       sessionStorage.removeItem("carDetailsForm")
       router.push("/seller")
     } catch (err: any) {
-      alert(err?.message || "Failed to publish listing")
+      toast({ 
+        title: "Error", 
+        description: err?.message || "Failed to publish listing" 
+      })
+    }
+  }
+
+  const processFiles = (files: FileList | File[]) => {
+    const fileArray = Array.from(files)
+    if (fileArray.length === 0) return
+
+    // Validate file types
+    const validFiles = fileArray.filter(file => file.type.startsWith('image/'))
+    if (validFiles.length !== fileArray.length) {
+      toast({ title: "Invalid files", description: "Only image files are allowed." })
+    }
+
+    // Update state with new files
+    const newFiles = [...selectedFiles, ...validFiles]
+    setSelectedFiles(newFiles)
+
+    // Create previews
+    const newPreviews = validFiles.map(file => URL.createObjectURL(file))
+    setImagePreviewUrls(prev => [...prev, ...newPreviews])
+
+    // Show feedback
+    toast({ 
+      title: `${validFiles.length} image${validFiles.length > 1 ? 's' : ''} selected`, 
+      description: "Images will be uploaded when you publish your listing." 
+    })
+  }
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    processFiles(event.target.files || [])
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragOver(true)
+  }
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragOver(false)
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragOver(false)
+    
+    const files = e.dataTransfer.files
+    processFiles(files)
+  }
+
+  const removeImage = (index: number) => {
+    // Revoke the URL to prevent memory leaks
+    URL.revokeObjectURL(imagePreviewUrls[index])
+    
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index))
+    setImagePreviewUrls(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const uploadImages = async (productId: string) => {
+    if (selectedFiles.length === 0) return
+
+    try {
+      setIsUploading(true)
+      const res = await apiClient.uploadProductPhotos(productId, selectedFiles)
+      toast({ 
+        title: "Upload complete", 
+        description: `${selectedFiles.length} photo${selectedFiles.length > 1 ? 's' : ''} uploaded successfully` 
+      })
+      return res.imageUrls || []
+    } catch (error: any) {
+      toast({ title: "Upload failed", description: error?.message || "Please try again" })
+      throw error
+    } finally {
+      setIsUploading(false)
     }
   }
 
@@ -230,10 +342,91 @@ function FinalListingForm() {
               </div>
             </div>
 
-            <Button className="w-full mt-6 bg-red-600 hover:bg-red-700 text-white">
-              <Camera className="w-4 h-4 mr-2" />
-              ADD PICTURES
-            </Button>
+            <div className="mt-6 space-y-4">
+              <label className="block text-sm font-medium text-gray-700">Product Photos</label>
+              
+              {/* File Input */}
+              <div className="relative">
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleFileChange}
+                  className="sr-only"
+                  id="photo-upload"
+                />
+                <label 
+                  htmlFor="photo-upload"
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer transition-all duration-200 ${
+                    isDragOver 
+                      ? 'border-red-400 bg-red-50' 
+                      : 'border-gray-300 bg-gray-50 hover:bg-gray-100 hover:border-red-400'
+                  }`}
+                >
+                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                    <Upload className={`w-8 h-8 mb-2 transition-colors duration-200 ${
+                      isDragOver ? 'text-red-500' : 'text-gray-400'
+                    }`} />
+                    <p className="mb-2 text-sm text-gray-500">
+                      <span className="font-semibold">Click to upload</span> or drag and drop
+                    </p>
+                    <p className="text-xs text-gray-500">PNG, JPG or JPEG (MAX. 10MB each)</p>
+                  </div>
+                </label>
+              </div>
+
+              {/* Photo Preview Grid */}
+              {imagePreviewUrls.length > 0 && (
+                <div className="space-y-3">
+                  <h4 className="text-sm font-medium text-gray-700">
+                    Selected Photos ({imagePreviewUrls.length})
+                  </h4>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {imagePreviewUrls.map((url, index) => (
+                      <div 
+                        key={index}
+                        className="relative group overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm hover:shadow-md transition-all duration-200"
+                      >
+                        <div className="aspect-square overflow-hidden">
+                          <img 
+                            src={url} 
+                            alt={`Preview ${index + 1}`}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                          />
+                        </div>
+                        
+                        {/* Remove Button */}
+                        <button
+                          type="button"
+                          onClick={() => removeImage(index)}
+                          className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 hover:bg-red-600 transition-all duration-200 transform hover:scale-110"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                        
+                        {/* Image Index */}
+                        <div className="absolute bottom-2 left-2 px-2 py-1 bg-black bg-opacity-50 text-white text-xs rounded">
+                          {index + 1}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Upload Status */}
+              {isUploading && (
+                <div className="flex items-center justify-center p-4 bg-blue-50 rounded-lg">
+                  <Loader2 className="w-5 h-5 mr-3 animate-spin text-blue-600" />
+                  <span className="text-sm text-blue-700 font-medium">
+                    Uploading {selectedFiles.length} photo{selectedFiles.length > 1 ? 's' : ''}...
+                  </span>
+                </div>
+              )}
+            </div>
 
             <div className="mt-6 space-y-4">
               <div>

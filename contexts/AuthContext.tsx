@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
+import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react"
 import { apiClient, type User } from "@/lib/api"
 
 interface AuthContextType {
@@ -21,6 +21,8 @@ interface AuthContextType {
   }) => Promise<void>
   setUserAfterGoogleSignup: (userData: User) => void
   logout: () => void
+  validateSession: () => Promise<boolean>
+  refreshSession: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -29,33 +31,88 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
+  // Enhanced session validation - memoized to prevent recreation
+  const validateSession = useCallback(async (): Promise<boolean> => {
+    try {
+      const validation = await apiClient.validateSession()
+
+      if (!validation.isValid) {
+        console.warn("[AuthContext] Session validation failed:", validation.error)
+        setUser(null)
+        apiClient.logout()
+        return false
+      }
+
+      if (validation.user) {
+        setUser(validation.user)
+        apiClient.setUserId(validation.user._id)
+      }
+
+      return true
+    } catch (error) {
+      console.error("[AuthContext] Session validation error:", error)
+      setUser(null)
+      apiClient.logout()
+      return false
+    }
+  }, []) // No dependencies to prevent recreation
+
+  // Refresh session from localStorage and validate - memoized
+  const refreshSession = useCallback(async (): Promise<void> => {
+    try {
+      setIsLoading(true)
+      await validateSession()
+    } finally {
+      setIsLoading(false)
+    }
+  }, [validateSession])
+
   useEffect(() => {
-    // Check if user is logged in on app start
-    const checkAuthStatus = () => {
+    // Check if user is logged in on app start - simplified to prevent session clearing
+    const checkAuthStatus = async () => {
       try {
+        setIsLoading(true)
+
+        // First try to get user from localStorage
+        const currentUser = apiClient.getCurrentUser()
+        const currentUserId = apiClient.getCurrentUserId()
+
+        if (!currentUser || !currentUserId || currentUserId === "temp-id") {
+          console.log("[AuthContext] No valid session found in localStorage")
+          setUser(null)
+          apiClient.logout()
+          return
+        }
+
+        // Set user from localStorage without aggressive backend validation
+        console.log("[AuthContext] Restoring session from localStorage for user:", currentUser.firstName, currentUser.lastName)
+        setUser(currentUser)
+        apiClient.setUserId(currentUser._id)
+
+        // Only validate session if explicitly needed (not on every app start)
+        // This prevents clearing valid sessions due to backend issues
+
+      } catch (error) {
+        console.error("[AuthContext] Error checking auth status:", error)
+        // Don't clear session on errors - might be temporary network issues
         const currentUser = apiClient.getCurrentUser()
         if (currentUser) {
+          console.log("[AuthContext] Keeping session despite error, user exists in localStorage")
           setUser(currentUser)
-          // Ensure the API client has the user ID set
-          apiClient.setUserId(currentUser._id)
         }
-      } catch (error) {
-        console.error("Error checking auth status:", error)
-        // Clear invalid session data
-        apiClient.logout()
       } finally {
         setIsLoading(false)
       }
     }
 
     checkAuthStatus()
-  }, [])
+  }, []) // Remove validateSession dependency to prevent loops
 
-  const login = async (email: string, password: string) => {
+  const login = useCallback(async (email: string, password: string) => {
     try {
       const response = await apiClient.login(email, password)
       setUser(response.user)
-      
+
       // Ensure the API client has the user ID set
       apiClient.setUserId(response.user._id)
 
@@ -73,9 +130,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       throw error
     }
-  }
+  }, [])
 
-  const register = async (userData: {
+  const register = useCallback(async (userData: {
     firstName: string
     lastName: string
     email: string
@@ -89,20 +146,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       throw error
     }
-  }
+  }, [])
 
-  const setUserAfterGoogleSignup = (userData: User) => {
+  const setUserAfterGoogleSignup = useCallback((userData: User) => {
     setUser(userData)
-  }
+  }, [])
 
-  const logout = () => {
+  const logout = useCallback(() => {
     apiClient.logout()
     setUser(null)
     // Redirect to homepage after logout
     if (typeof window !== "undefined") {
       window.location.href = "/"
     }
-  }
+  }, [])
 
   const value: AuthContextType = {
     user,
@@ -115,6 +172,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     register,
     setUserAfterGoogleSignup,
     logout,
+    validateSession,
+    refreshSession,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
