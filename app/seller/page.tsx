@@ -1,52 +1,120 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback, useMemo, useRef } from "react"
 import { useAuth } from "@/contexts/AuthContext"
+import { useEnhancedAuth } from "@/hooks/useEnhancedAuth"
 import { useRouter } from "next/navigation"
 import { RoleProtectedRoute } from "@/components/RoleProtectedRoute"
+import { SessionDebugger } from "@/components/SessionDebugger"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { Plus, Package, TrendingUp, DollarSign, LogOut, Edit, Trash2 } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
+import { Plus, Package, TrendingUp, DollarSign, LogOut, Edit, Trash2, AlertCircle, RefreshCw } from "lucide-react"
 import { apiClient, type Item } from "@/lib/api"
 
 export default function SellerDashboard() {
   const { user, isSeller, logout } = useAuth()
+  const enhancedAuth = useEnhancedAuth({
+    requireSeller: true,
+    showToasts: false // Disable automatic toasts to prevent red notifications
+  })
   const router = useRouter()
+  const { toast } = useToast()
   const [products, setProducts] = useState<Item[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
+  const [fetchError, setFetchError] = useState<string | null>(null)
 
-  // Fetch seller's products from API
-  useEffect(() => {
-    const fetchSellerProducts = async () => {
-      if (!isSeller || !user) return
-      try {
-        setIsLoading(true)
-        console.log("[v0] Fetching seller products for user:", user._id)
-        console.log("[v0] API client authenticated:", apiClient.isAuthenticated())
-        const response = await apiClient.getMyItems()
+  // Use ref to prevent state updates after unmount
+  const isMountedRef = useRef(true)
+
+  // Memoize filtered products to prevent unnecessary recalculations
+  const filteredProducts = useMemo(() => {
+    return selectedCategory === "all"
+      ? products
+      : products.filter(product => product.category === selectedCategory)
+  }, [products, selectedCategory])
+
+  // Memoize stats calculations
+  const dashboardStats = useMemo(() => {
+    const totalProducts = products.length
+    const totalValue = products.reduce((sum, product) => sum + (product.price || 0), 0)
+    const activeProducts = products.filter(product => product.status === "active").length
+
+    return {
+      totalProducts,
+      totalValue,
+      activeProducts
+    }
+  }, [products])
+
+  // Simplified fetch - trust the authentication state
+  const fetchSellerProducts = useCallback(async () => {
+    if (!isMountedRef.current) return
+
+    try {
+      setIsLoading(true)
+      setFetchError(null)
+
+      // Only check if user exists and is seller - don't validate session aggressively
+      if (!user) {
+        console.log("[SellerDashboard] No user found")
+        return
+      }
+
+      // Trust that seller role is handled by RoleProtectedRoute
+      // If we're here, user should be a seller
+
+      console.log("[v0] Fetching seller products for user:", user.firstName, user.lastName, "(" + user._id + ")")
+      console.log("[v0] API client userId:", apiClient.getCurrentUserId())
+
+      // Ensure API client has the correct userId
+      apiClient.setUserId(user._id)
+
+      const response = await apiClient.getMyItems()
+      if (isMountedRef.current) {
         setProducts(response.items)
-      } catch (error) {
-        console.error("Failed to fetch seller products:", error)
+        console.log("[v0] Successfully loaded", response.items.length, "products for seller")
+      }
+
+    } catch (error: any) {
+      console.error("Failed to fetch seller products:", error)
+      const errorMessage = error?.message || "Failed to load your listings"
+
+      if (isMountedRef.current) {
+        // Don't show destructive toasts for fetch errors - just set error state
+        setFetchError(errorMessage)
         setProducts([])
-      } finally {
+      }
+    } finally {
+      if (isMountedRef.current) {
         setIsLoading(false)
       }
     }
-
-    fetchSellerProducts()
   }, [isSeller, user])
 
-  const handleLogout = () => {
-    logout()
-  }
+  useEffect(() => {
+    fetchSellerProducts()
 
-  const filteredProducts = selectedCategory === "all"
-    ? products
-    : products.filter(product => product.category === selectedCategory)
+    // Cleanup function to prevent state updates after unmount
+    return () => {
+      isMountedRef.current = false
+    }
+  }, [fetchSellerProducts])
+
+  const handleLogout = useCallback(() => {
+    logout()
+  }, [logout])
+
+  const retryFetchProducts = useCallback(async () => {
+    if (!isMountedRef.current) return
+
+    setFetchError(null)
+    await fetchSellerProducts()
+  }, [fetchSellerProducts])
 
   return (
     <RoleProtectedRoute allowedRoles={["seller"]}>
@@ -138,12 +206,45 @@ export default function SellerDashboard() {
             </Button>
           </div>
 
+          {/* Error Display */}
+          {fetchError && (
+            <Card className="mb-6 border-red-200 bg-red-50">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="w-5 h-5 text-red-600" />
+                    <span className="text-red-800 font-medium">Error Loading Listings</span>
+                  </div>
+                  <Button
+                    onClick={retryFetchProducts}
+                    variant="outline"
+                    size="sm"
+                    className="border-red-600 text-red-600 hover:bg-red-600 hover:text-white"
+                  >
+                    <RefreshCw className="w-4 h-4 mr-1" />
+                    Retry
+                  </Button>
+                </div>
+                <p className="text-red-700 text-sm mt-2">{fetchError}</p>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Products Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {isLoading ? (
               <div className="col-span-full text-center py-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
                 <p className="mt-2 text-gray-600">Loading products...</p>
+              </div>
+            ) : fetchError ? (
+              <div className="col-span-full text-center py-8">
+                <AlertCircle className="h-12 w-12 text-red-400 mx-auto mb-4" />
+                <p className="text-gray-600 mb-4">Failed to load your listings</p>
+                <Button onClick={retryFetchProducts} className="bg-red-600 hover:bg-red-700">
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Try Again
+                </Button>
               </div>
             ) : filteredProducts.length === 0 ? (
               <div className="col-span-full text-center py-8">
@@ -199,6 +300,9 @@ export default function SellerDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Session Debugger for development */}
+      {process.env.NODE_ENV === "development" && <SessionDebugger />}
     </RoleProtectedRoute>
   )
 }
