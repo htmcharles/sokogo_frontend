@@ -39,13 +39,13 @@ export default function CarCard({ car, className = "" }: CarCardProps) {
     e.preventDefault()
     e.stopPropagation()
     // Share functionality can be implemented here
-    if (navigator.share) {
+    if (typeof window !== "undefined" && navigator.share) {
       navigator.share({
         title: car.title,
         text: car.description,
         url: window.location.origin + `/description/${car._id}`,
       })
-    } else {
+    } else if (typeof window !== "undefined") {
       // Fallback: copy to clipboard
       navigator.clipboard.writeText(window.location.origin + `/description/${car._id}`)
     }
