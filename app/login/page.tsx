@@ -37,23 +37,19 @@ export default function LoginPage() {
   useEffect(() => {
     const run = async () => {
       if (status === "authenticated" && session?.user) {
-        if ((session.user as any)?.needsProfileCompletion) {
-          router.push("/complete-profile")
-          return
-        }
-
-        // Perform backend login exactly once after Google auth
+        // If backend already has a profile for this email, do not redirect to complete-profile
+        // Instead, log into backend using stored credentials if available
         if (!didBackendLoginRef.current && session.user.email) {
           try {
             didBackendLoginRef.current = true
             const profile = await apiClient.getUserProfile(session.user.email)
-            if (profile?.password) {
+            if (profile?._id && profile.password) {
               await login(session.user.email, profile.password)
               router.push("/seller")
               return
             }
           } catch (e) {
-            // Fall back to waiting for authUser or manual login
+            // ignore and let normal flow continue
           }
         }
 

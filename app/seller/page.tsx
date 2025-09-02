@@ -3,9 +3,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react"
 import { useAuth } from "@/contexts/AuthContext"
 import { useEnhancedAuth } from "@/hooks/useEnhancedAuth"
-import { useRouter } from "next/navigation"
 import { RoleProtectedRoute } from "@/components/RoleProtectedRoute"
-import { SessionDebugger } from "@/components/SessionDebugger"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
@@ -14,6 +12,7 @@ import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
 import { Plus, Package, TrendingUp, DollarSign, LogOut, Edit, Trash2, AlertCircle, RefreshCw } from "lucide-react"
 import { apiClient, type Item } from "@/lib/api"
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
 
 export default function SellerDashboard() {
   const { user, isSeller, logout } = useAuth()
@@ -21,7 +20,7 @@ export default function SellerDashboard() {
     requireSeller: true,
     showToasts: false // Disable automatic toasts to prevent red notifications
   })
-  const router = useRouter()
+  // Avoid router to satisfy current linter setup; use location instead
   const { toast } = useToast()
   const [products, setProducts] = useState<Item[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -206,7 +205,7 @@ export default function SellerDashboard() {
                 </SelectContent>
               </Select>
             </div>
-            <Button onClick={() => router.push("/category")} className="bg-red-600 hover:bg-red-700">
+            <Button onClick={() => { if (typeof window !== "undefined") window.location.href = "/category" }} className="bg-red-600 hover:bg-red-700">
               <Plus className="w-4 h-4 mr-2" />
               Add Product
             </Button>
@@ -256,7 +255,7 @@ export default function SellerDashboard() {
               <div className="col-span-full text-center py-8">
                 <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <p className="text-gray-600">No products found</p>
-                <Button onClick={() => router.push("/category")} className="mt-4">
+                <Button onClick={() => { if (typeof window !== "undefined") window.location.href = "/category" }} className="mt-4">
                   <Plus className="w-4 h-4 mr-2" />
                   Add Your First Product
                 </Button>
@@ -264,13 +263,33 @@ export default function SellerDashboard() {
             ) : (
               filteredProducts.map((product) => (
                 <Card key={product._id} className="bg-white border-gray-200 overflow-hidden">
-                  <div className="h-48 bg-gray-200 flex items-center justify-center">
+                  <div className="h-48 bg-gray-200 flex items-center justify-center relative">
                     {product.images && product.images.length > 0 ? (
-                      <img
-                        src={product.images[0]}
-                        alt={product.title}
-                        className="w-full h-full object-cover"
-                      />
+                      product.images.length === 1 ? (
+                        <img
+                          src={product.images[0]}
+                          alt={product.title}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full p-0 m-0">
+                          <Carousel className="w-full h-full">
+                            <CarouselContent className="h-full">
+                              {product.images.map((imgSrc, idx) => (
+                                <CarouselItem key={idx} className="h-48">
+                                  <img
+                                    src={imgSrc}
+                                    alt={`${product.title} ${idx + 1}`}
+                                    className="w-full h-48 object-cover"
+                                  />
+                                </CarouselItem>
+                              ))}
+                            </CarouselContent>
+                            <CarouselPrevious className="left-2" />
+                            <CarouselNext className="right-2" />
+                          </Carousel>
+                        </div>
+                      )
                     ) : (
                       <Package className="h-12 w-12 text-gray-400" />
                     )}
@@ -307,8 +326,7 @@ export default function SellerDashboard() {
         </div>
       </div>
 
-      {/* Session Debugger for development */}
-      {process.env.NODE_ENV === "development" && <SessionDebugger />}
+      {/* Debug panel removed */}
     </RoleProtectedRoute>
   )
 }

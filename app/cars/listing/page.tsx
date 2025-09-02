@@ -121,14 +121,28 @@ function FinalListingForm() {
 
     const [make, model] = (previousData?.makeModel || "").split("-")
 
+    // Upload images locally first and collect public paths
+    let localImagePaths: string[] = []
+    if (selectedFiles.length > 0) {
+      try {
+        setIsUploading(true)
+        const resp = await apiClient.uploadImagesLocally(selectedFiles)
+        localImagePaths = resp.imagePaths || []
+      } catch (uploadErr: any) {
+        toast({ title: "Local upload failed", description: uploadErr?.message || "Proceeding without images." })
+      } finally {
+        setIsUploading(false)
+      }
+    }
+
     const payload = {
       title: formData.title || `${make ? make.toUpperCase() : "Car"} ${model ? model.toUpperCase() : "Listing"}`,
       description: formData.description || "",
       price: parsePrice(previousData?.price || ""),
-      currency: "Frw",
+      currency: "RWF",
       category: "MOTORS" as const,
       subcategory: "CARS",
-      images: [] as string[],
+      images: localImagePaths,
       location: {
         district: previousData?.location || "",
         city: previousData?.location ? "Kigali" : "",
@@ -161,34 +175,21 @@ function FinalListingForm() {
     }
 
     try {
-      // First create the item
+      // Create item using local image paths in payload
       const res = await apiClient.createItem(payload as any)
       const itemId = res.item._id
-      
-      // Upload images if any are selected
-      if (selectedFiles.length > 0) {
-        try {
-          await uploadImages(itemId)
-        } catch (uploadError) {
-          // Item was created but image upload failed
-          toast({ 
-            title: "Listing created", 
-            description: "Product created but some images failed to upload. You can add them later." 
-          })
-        }
-      }
-      
-      toast({ 
-        title: "Success!", 
-        description: "Your listing has been published successfully." 
+
+      toast({
+        title: "Success!",
+        description: "Your listing has been published successfully."
       })
-      
+
       sessionStorage.removeItem("carDetailsForm")
       router.push("/seller")
     } catch (err: any) {
-      toast({ 
-        title: "Error", 
-        description: err?.message || "Failed to publish listing" 
+      toast({
+        title: "Error",
+        description: err?.message || "Failed to publish listing"
       })
     }
   }
@@ -212,9 +213,9 @@ function FinalListingForm() {
     setImagePreviewUrls(prev => [...prev, ...newPreviews])
 
     // Show feedback
-    toast({ 
-      title: `${validFiles.length} image${validFiles.length > 1 ? 's' : ''} selected`, 
-      description: "Images will be uploaded when you publish your listing." 
+    toast({
+      title: `${validFiles.length} image${validFiles.length > 1 ? 's' : ''} selected`,
+      description: "Images will be uploaded when you publish your listing."
     })
   }
 
@@ -235,7 +236,7 @@ function FinalListingForm() {
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault()
     setIsDragOver(false)
-    
+
     const files = e.dataTransfer.files
     processFiles(files)
   }
@@ -243,7 +244,7 @@ function FinalListingForm() {
   const removeImage = (index: number) => {
     // Revoke the URL to prevent memory leaks
     URL.revokeObjectURL(imagePreviewUrls[index])
-    
+
     setSelectedFiles(prev => prev.filter((_, i) => i !== index))
     setImagePreviewUrls(prev => prev.filter((_, i) => i !== index))
   }
@@ -254,9 +255,9 @@ function FinalListingForm() {
     try {
       setIsUploading(true)
       const res = await apiClient.uploadProductPhotos(productId, selectedFiles)
-      toast({ 
-        title: "Upload complete", 
-        description: `${selectedFiles.length} photo${selectedFiles.length > 1 ? 's' : ''} uploaded successfully` 
+      toast({
+        title: "Upload complete",
+        description: `${selectedFiles.length} photo${selectedFiles.length > 1 ? 's' : ''} uploaded successfully`
       })
       return res.imageUrls || []
     } catch (error: any) {
@@ -344,7 +345,7 @@ function FinalListingForm() {
 
             <div className="mt-6 space-y-4">
               <label className="block text-sm font-medium text-gray-700">Product Photos</label>
-              
+
               {/* File Input */}
               <div className="relative">
                 <input
@@ -355,14 +356,14 @@ function FinalListingForm() {
                   className="sr-only"
                   id="photo-upload"
                 />
-                <label 
+                <label
                   htmlFor="photo-upload"
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}
                   onDrop={handleDrop}
                   className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer transition-all duration-200 ${
-                    isDragOver 
-                      ? 'border-red-400 bg-red-50' 
+                    isDragOver
+                      ? 'border-red-400 bg-red-50'
                       : 'border-gray-300 bg-gray-50 hover:bg-gray-100 hover:border-red-400'
                   }`}
                 >
@@ -386,18 +387,18 @@ function FinalListingForm() {
                   </h4>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {imagePreviewUrls.map((url, index) => (
-                      <div 
+                      <div
                         key={index}
                         className="relative group overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm hover:shadow-md transition-all duration-200"
                       >
                         <div className="aspect-square overflow-hidden">
-                          <img 
-                            src={url} 
+                          <img
+                            src={url}
                             alt={`Preview ${index + 1}`}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                           />
                         </div>
-                        
+
                         {/* Remove Button */}
                         <button
                           type="button"
@@ -406,7 +407,7 @@ function FinalListingForm() {
                         >
                           <X className="w-4 h-4" />
                         </button>
-                        
+
                         {/* Image Index */}
                         <div className="absolute bottom-2 left-2 px-2 py-1 bg-black bg-opacity-50 text-white text-xs rounded">
                           {index + 1}

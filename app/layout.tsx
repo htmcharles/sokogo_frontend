@@ -1,10 +1,9 @@
 import type React from "react"
-import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import "./globals.css"
 import { AuthProvider } from "@/contexts/AuthContext"
-import { SessionWrapper } from "@/components/SessionWrapper"
 import { Toaster } from "@/components/ui/toaster"
+import { NextAuthProvider } from "@/components/next-auth-provider"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,7 +15,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 })
 
-export const metadata: Metadata = {
+export const metadata = {
   title: "SOKOGO - Buy & Sell Cars in Rwanda",
   description:
     "Rwanda's premier marketplace for cars. Buy and sell with confidence on SOKOGO.",
@@ -30,14 +29,14 @@ export default function RootLayout({
 }>) {
   return (
       <html lang="en">
-          <SessionWrapper>
           <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <AuthProvider>
-          {children}
-          <Toaster />
-        </AuthProvider>
+        <NextAuthProvider>
+          <AuthProvider>
+            {children}
+            <Toaster />
+          </AuthProvider>
+        </NextAuthProvider>
       </body>
-       </SessionWrapper>
     </html>
   )
 }

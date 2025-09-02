@@ -59,6 +59,7 @@ export default function PublishListingPage() {
   // Upload and publishing state
   const [productId, setProductId] = useState<string | null>(null)
   const [uploadedPhotos, setUploadedPhotos] = useState<string[]>([])
+  const [pendingFiles, setPendingFiles] = useState<File[]>([])
   const [isPublishing, setIsPublishing] = useState(false)
   const [isListingCreated, setIsListingCreated] = useState(false)
 
@@ -128,7 +129,8 @@ export default function PublishListingPage() {
       }
 
       console.log("[PublishListing] Creating item with payload:", payload)
-      const response = await apiClient.createItem(payload as any)
+      // If user already selected images (step 2), send them now via multipart
+      const response = await apiClient.createItem({ ...(payload as any), imagesFiles: pendingFiles })
       const newProductId = response.item._id
 
       console.log("[PublishListing] Listing created with ID:", newProductId)
@@ -158,6 +160,11 @@ export default function PublishListingPage() {
       title: "Photos Added!",
       description: `${imageUrls.length} photo${imageUrls.length > 1 ? 's' : ''} uploaded successfully.`
     })
+  }
+
+  // Capture selected files before submit (CarPhotoUpload should call this via prop you add)
+  const handleFilesSelected = (files: File[]) => {
+    setPendingFiles(files)
   }
 
   const publishListing = async () => {
@@ -330,7 +337,7 @@ export default function PublishListingPage() {
                     />
                   </div>
                 </div>
-                
+
                 <div>
                   <Label htmlFor="description">Description *</Label>
                   <Textarea
@@ -342,7 +349,7 @@ export default function PublishListingPage() {
                   />
                 </div>
 
-                <Button 
+                <Button
                   onClick={createListing}
                   disabled={isPublishing || isListingCreated}
                   className="w-full bg-red-600 hover:bg-red-700"
@@ -383,6 +390,7 @@ export default function PublishListingPage() {
                     productId={productId}
                     onUploadSuccess={handlePhotosUploaded}
                     maxFiles={8}
+                    onFilesSelected={handleFilesSelected as any}
                   />
                 ) : (
                   <div className="text-center py-8 text-gray-500">
@@ -414,8 +422,8 @@ export default function PublishListingPage() {
                       <p><strong>Photos:</strong> {uploadedPhotos.length} uploaded</p>
                     </div>
                   </div>
-                  
-                  <Button 
+
+                  <Button
                     onClick={publishListing}
                     disabled={isPublishing}
                     className="w-full bg-green-600 hover:bg-green-700"
