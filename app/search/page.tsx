@@ -10,7 +10,7 @@ import { useAuth } from "@/contexts/AuthContext"
 import { apiClient } from "@/lib/api"   // ✅ API client
 import { selectOptions } from "@/data/selectOptions"  // ✅ import your car models list
 import type { Item } from "@/lib/api"
-import CarCard from "@/components/CarCard"
+import SearchCarCard from "@/components/SearchCarCard"
 
 export default function SearchPage() {
     const Makes = selectOptions.makes
@@ -53,7 +53,9 @@ export default function SearchPage() {
         if (activeMake) {
           console.log(`[Search] Filtering by Make: "${activeMake}"`)
           const beforeMakeFilter = filtered.length
-          filtered = filtered.filter((item) => item.features?.make === activeMake)
+          filtered = filtered.filter((item) =>
+            item.features?.make && item.features.make.toLowerCase() === activeMake.toLowerCase()
+          )
           console.log(`[Search] After Make filter: ${beforeMakeFilter} -> ${filtered.length} items`)
         }
 
@@ -135,7 +137,7 @@ export default function SearchPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {results.map((item) => (
-            <CarCard key={item._id} car={item} />
+            <SearchCarCard key={item._id} car={item} />
           ))}
         </div>
 
