@@ -197,9 +197,9 @@ export default function Home() {
       >
         <div className="absolute "></div>
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex flex-col justify-center">
-          <motion.div
+                    <motion.div
             className="text-white mb-8"
-            variants={textVariant(0.2)}
+            variants={textVariant(0.1)}
             initial="hidden"
             whileInView="show"
             viewport={{ once: true }}
@@ -221,10 +221,10 @@ export default function Home() {
           </motion.div>
 
           {/* Search Bar */}
-          <motion.form
+                    <motion.form
             onSubmit={handleSearch}
             className="flex gap-4 max-w-2xl"
-            variants={fadeIn("up", "tween", 0.4, 0.6)}
+            variants={fadeIn("up", "tween", 0.2, 0.4)}
             initial="hidden"
             whileInView="show"
             viewport={{ once: true }}
@@ -248,9 +248,9 @@ export default function Home() {
 
       {/* Popular in CARS Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <motion.h2
+                <motion.h2
           className="text-2xl font-bold text-gray-800 mb-8"
-          variants={textVariant(0.2)}
+          variants={textVariant(0.1)}
           initial="hidden"
           whileInView="show"
           viewport={{ once: true }}
@@ -265,9 +265,9 @@ export default function Home() {
             ))}
           </div>
         ) : (
-          <motion.div
+                    <motion.div
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
-            variants={staggerContainer(0.1, 0.2)}
+            variants={staggerContainer(0.05, 0.1)}
             initial="hidden"
             whileInView="show"
             viewport={{ once: true, amount: 0.1 }}
@@ -290,9 +290,9 @@ export default function Home() {
       {/* Why Choose Us Section */}
       <section className="bg-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
+                    <motion.div
             className="text-center mb-12"
-            variants={textVariant(0.2)}
+            variants={textVariant(0.1)}
             initial="hidden"
             whileInView="show"
             viewport={{ once: true }}
@@ -301,16 +301,16 @@ export default function Home() {
             <p className="text-gray-600 max-w-3xl mx-auto">Our marketplace is designed for a seamless car-buying experience in Rwanda.</p>
           </motion.div>
 
-          <motion.div
+                    <motion.div
             className="grid grid-cols-1 md:grid-cols-3 gap-8"
-            variants={staggerContainer(0.2, 0.1)}
+            variants={staggerContainer(0.1, 0.05)}
             initial="hidden"
             whileInView="show"
             viewport={{ once: true, amount: 0.1 }}
           >
             <motion.div
               className="text-center"
-              variants={fadeIn("up", "tween", 0.2, 0.6)}
+              variants={fadeIn("up", "tween", 0.1, 0.4)}
             >
               <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <CheckCircle className="h-8 w-8 text-red-600" />
@@ -323,7 +323,7 @@ export default function Home() {
 
             <motion.div
               className="text-center"
-              variants={fadeIn("up", "tween", 0.4, 0.6)}
+              variants={fadeIn("up", "tween", 0.2, 0.4)}
             >
               <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <CheckCircle className="h-8 w-8 text-red-600" />
@@ -336,7 +336,7 @@ export default function Home() {
 
             <motion.div
               className="text-center"
-              variants={fadeIn("up", "tween", 0.6, 0.6)}
+              variants={fadeIn("up", "tween", 0.3, 0.4)}
             >
               <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <CheckCircle className="h-8 w-8 text-red-600" />
@@ -359,7 +359,13 @@ export default function Home() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             {/* Contact Information */}
-            <div className="space-y-8">
+                        <motion.div
+              className="space-y-8"
+              variants={fadeIn("right", "tween", 0.1, 0.4)}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true }}
+            >
               <div>
                 <h3 className="text-xl font-semibold text-gray-800 mb-6">Contact Information</h3>
 
@@ -395,10 +401,16 @@ export default function Home() {
                   <p className="ml-7">Sunday: Closed</p>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
             {/* Contact Form */}
-            <div className="bg-white p-8 rounded-lg shadow-md">
+                        <motion.div
+              className="bg-white p-8 rounded-lg shadow-md"
+              variants={fadeIn("left", "tween", 0.2, 0.4)}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true }}
+            >
               <form onSubmit={handleContactSubmit} className="space-y-6">
                 <div>
                   <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-2">
@@ -452,7 +464,7 @@ export default function Home() {
                   Send Message
                 </Button>
               </form>
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>
