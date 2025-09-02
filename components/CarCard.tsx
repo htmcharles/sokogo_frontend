@@ -53,10 +53,46 @@ export default function CarCard({ car, className = "" }: CarCardProps) {
     }
   }
 
+  // Extract car details from title or features
+  const getCarDetails = () => {
+    const title = car.title || ""
+    const features = car.features || {}
+
+    // Try to extract make, model, trim from title
+    const titleParts = title.split(" ")
+    let make = titleParts[0] || "Unknown"
+    let model = titleParts[1] || ""
+    let trim = ""
+
+    // Look for trim indicators
+    const trimIndicators = ["DLX", "LX", "EX", "SE", "LE", "GT", "Sport", "Limited", "Premium"]
+    for (let i = 2; i < titleParts.length; i++) {
+      if (trimIndicators.some(indicator => titleParts[i].toUpperCase().includes(indicator))) {
+        trim = titleParts[i]
+        break
+      }
+    }
+
+    // If no trim found, use remaining parts as model
+    if (!trim && titleParts.length > 2) {
+      model = titleParts.slice(1).join(" ")
+    }
+
+    return {
+      make,
+      model,
+      trim,
+      year: features.year || "N/A",
+      mileage: features.kilometers || features.mileage || 0
+    }
+  }
+
+  const carDetails = getCarDetails()
+
   return (
     <Link href={`/description/${car._id}`} className={`block ${className}`}>
-            <motion.div
-        className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 group"
+      <motion.div
+        className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 group cursor-pointer"
         variants={cardVariant}
         initial="hidden"
         whileInView="show"
@@ -64,32 +100,19 @@ export default function CarCard({ car, className = "" }: CarCardProps) {
         whileHover="hover"
       >
         {/* Image Section */}
-        <div className="relative h-48">
+        <div className="relative h-48 bg-gray-100">
           <img
             src={car.images?.[0] || "/placeholder.svg?height=200&width=300&query=car"}
             alt={car.title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
 
-          {/* Status Badge */}
-          <div className="absolute top-4 left-4">
-            <span
-              className={`px-3 py-1 rounded-full text-sm font-medium ${
-                (car.status || "AVAILABLE") === "AVAILABLE" || (car.status || "ACTIVE") === "ACTIVE"
-                  ? "bg-green-100 text-green-800"
-                  : "bg-red-100 text-red-800"
-              }`}
-            >
-              {car.status || "AVAILABLE"}
-            </span>
-          </div>
-
           {/* Action Buttons */}
-          <div className="absolute top-4 right-4 flex gap-2">
+          <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
             <Button
               size="sm"
               variant="ghost"
-              className="bg-white/80 hover:bg-white text-gray-700 hover:text-red-600"
+              className="bg-white/90 hover:bg-white text-gray-700 hover:text-red-600 h-8 w-8 p-0 rounded-full"
               onClick={handleFavorite}
             >
               <Heart className={`w-4 h-4 ${isFavorite ? "fill-red-600 text-red-600" : ""}`} />
@@ -97,7 +120,7 @@ export default function CarCard({ car, className = "" }: CarCardProps) {
             <Button
               size="sm"
               variant="ghost"
-              className="bg-white/80 hover:bg-white text-gray-700 hover:text-red-600"
+              className="bg-white/90 hover:bg-white text-gray-700 hover:text-red-600 h-8 w-8 p-0 rounded-full"
               onClick={handleShare}
             >
               <Share2 className="w-4 h-4" />
@@ -106,61 +129,41 @@ export default function CarCard({ car, className = "" }: CarCardProps) {
 
           {/* Image Count Badge */}
           {car.images && car.images.length > 1 && (
-            <div className="absolute bottom-4 right-4 bg-black/50 text-white px-2 py-1 rounded text-sm">
+            <div className="absolute bottom-3 right-3 bg-black/70 text-white px-2 py-1 rounded text-xs font-medium">
               {car.images.length} photos
             </div>
           )}
         </div>
 
-        {/* Content Section */}
-        <div className="p-4">
-          {/* Price */}
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-red-600 font-bold text-lg">
+        {/* Content Section - Matching the image design */}
+        <div className="p-4 space-y-3">
+          {/* Price - Prominently displayed */}
+          <div className="text-center">
+            <p className="text-gray-900 font-bold text-xl">
               {formatPrice(car.price, car.currency)}
             </p>
           </div>
 
-          {/* Title */}
-          <h3 className="font-semibold text-gray-800 mb-2 line-clamp-2">
-            {car.title}
-          </h3>
+          {/* Make • Model • Trim */}
+          <div className="text-center">
+            <h3 className="text-gray-800 font-semibold text-lg leading-tight">
+              {carDetails.make} • {carDetails.model}
+              {carDetails.trim && ` • ${carDetails.trim}`}
+            </h3>
+          </div>
 
-          {/* Car Details */}
-          {car.category === "MOTORS" && car.features && (
-            <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
-              {car.features.year && (
-                <span className="flex items-center gap-1">
-                  <span>📅</span>
-                  {car.features.year}
-                </span>
-              )}
-              {(car.features.kilometers || car.features.mileage) && (
-                <span className="flex items-center gap-1">
-                  <span>🛣️</span>
-                  {(car.features.kilometers || car.features.mileage)?.toLocaleString()} km
-                </span>
-              )}
-              {(car.features.transmissionType || car.features.transmission) && (
-                <span className="flex items-center gap-1">
-                  <span>⚙️</span>
-                  {car.features.transmissionType || car.features.transmission}
-                </span>
-              )}
-            </div>
-          )}
+          {/* Year • Mileage */}
+          <div className="text-center">
+            <p className="text-gray-600 font-medium text-sm">
+              {carDetails.year} • {carDetails.mileage.toLocaleString()} km
+            </p>
+          </div>
 
           {/* Location */}
-          <p className="text-gray-500 text-sm">
-            {formatLocation(car.location)}
-          </p>
-
-          {/* Additional Info */}
-          <div className="mt-2 flex items-center justify-between text-xs text-gray-400">
-            <span>Posted {new Date(car.createdAt).toLocaleDateString()}</span>
-            {car.condition && (
-              <span className="capitalize">{car.condition}</span>
-            )}
+          <div className="text-center pt-2 border-t border-gray-100">
+            <p className="text-gray-500 text-sm">
+              {formatLocation(car.location)}
+            </p>
           </div>
         </div>
       </motion.div>
