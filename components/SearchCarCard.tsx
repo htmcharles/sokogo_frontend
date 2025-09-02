@@ -4,6 +4,8 @@ import { useState } from "react"
 import Link from "next/link"
 import { Heart, Share2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { motion } from "framer-motion"
+import { cardVariant, tiltVariant } from "@/lib/animations"
 import type { Item } from "@/lib/api"
 
 interface CarCardProps {
@@ -53,7 +55,14 @@ export default function CarCard({ car, className = "" }: CarCardProps) {
 
   return (
     <Link href={`/description/${car._id}`} className={`block ${className}`}>
-      <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 group">
+            <motion.div
+        className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 group"
+        variants={cardVariant}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true, amount: 0.3 }}
+        whileHover="hover"
+      >
         {/* Image Section */}
         <div className="relative h-48">
           <img
@@ -154,7 +163,7 @@ export default function CarCard({ car, className = "" }: CarCardProps) {
             )}
           </div>
         </div>
-      </div>
+      </motion.div>
     </Link>
   )
 }

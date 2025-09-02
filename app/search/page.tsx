@@ -6,9 +6,11 @@ import { Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
+import { motion } from "framer-motion"
 import { useAuth } from "@/contexts/AuthContext"
 import { apiClient } from "@/lib/api"   // ✅ API client
 import { selectOptions } from "@/data/selectOptions"  // ✅ import your car models list
+import { staggerContainer, fadeIn } from "@/lib/animations"
 import type { Item } from "@/lib/api"
 import SearchCarCard from "@/components/SearchCarCard"
 
@@ -126,20 +128,32 @@ export default function SearchPage() {
 
       {/* Results */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-6">
+        <motion.div
+          className="mb-6"
+          variants={fadeIn("up", "tween", 0.2, 0.6)}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true }}
+        >
           <h2 className="text-2xl font-bold text-gray-800">
             Search Results{" "}
             {searchQuery && `for "${searchQuery}"`}
             {activeMake && ` in ${Makes.find(m => m.value === activeMake)?.label}`}
           </h2>
           <p className="text-gray-600 mt-2">{results.length} items found</p>
-        </div>
+        </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+          variants={staggerContainer(0.1, 0.2)}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.1 }}
+        >
           {results.map((item) => (
             <SearchCarCard key={item._id} car={item} />
           ))}
-        </div>
+        </motion.div>
 
         {results.length === 0 && (searchQuery || activeMake) && (
           <div className="text-center py-12">

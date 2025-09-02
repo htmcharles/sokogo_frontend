@@ -19,7 +19,9 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { motion } from "framer-motion"
 import { apiClient, type Item } from "@/lib/api"
+import { textVariant, fadeIn, staggerContainer, slideIn } from "@/lib/animations"
 import Link from "next/link"
 import { useAuth } from "@/contexts/AuthContext"
 import CarCard from "@/components/CarCard"
@@ -188,14 +190,20 @@ export default function Home() {
 
       {/* Hero Section */}
       <div
-        className="relative h-72 bg-cover bg-center"
+        className="relative h-96 bg-cover bg-center"
         style={{
-          backgroundImage: `url('/cityscape-background.jpeg')`,
+          backgroundImage: `url('/cityscape-background.jpg')`,
         }}
       >
         <div className="absolute "></div>
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex flex-col justify-center">
-          <div className="text-white mb-8">
+          <motion.div
+            className="text-white mb-8"
+            variants={textVariant(0.2)}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+          >
             <h1 className="text-4xl font-bold mb-4">Find Your Perfect Car</h1>
             <p className="text-xl mb-4">Searching in</p>
 
@@ -210,10 +218,17 @@ export default function Home() {
                 MOTORS
               </button>
             </div>
-          </div>
+          </motion.div>
 
           {/* Search Bar */}
-          <form onSubmit={handleSearch} className="flex gap-4 max-w-2xl">
+          <motion.form
+            onSubmit={handleSearch}
+            className="flex gap-4 max-w-2xl"
+            variants={fadeIn("up", "tween", 0.4, 0.6)}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+          >
             <div className="flex-1 relative">
               <Input
                 type="text"
@@ -227,15 +242,21 @@ export default function Home() {
             <Button type="submit" className="bg-red-600 hover:bg-red-700 text-white px-8 h-14 rounded-full shadow-lg font-semibold">
               Search
             </Button>
-          </form>
+          </motion.form>
         </div>
       </div>
 
       {/* Popular in CARS Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h2 className="text-2xl font-bold text-gray-800 mb-8">
+        <motion.h2
+          className="text-2xl font-bold text-gray-800 mb-8"
+          variants={textVariant(0.2)}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true }}
+        >
           Popular in <span className="text-red-600">CARS</span>
-        </h2>
+        </motion.h2>
 
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -244,7 +265,13 @@ export default function Home() {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+            variants={staggerContainer(0.1, 0.2)}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.1 }}
+          >
             {carsData.length > 0 ? (
               carsData.map((car) => (
                 <CarCard key={car._id} car={car} />
@@ -254,7 +281,7 @@ export default function Home() {
                 <p className="text-gray-500">No cars available at the moment</p>
               </div>
             )}
-          </div>
+          </motion.div>
         )}
       </section>
 
@@ -263,13 +290,28 @@ export default function Home() {
       {/* Why Choose Us Section */}
       <section className="bg-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
+          <motion.div
+            className="text-center mb-12"
+            variants={textVariant(0.2)}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+          >
             <h2 className="text-3xl font-bold text-gray-800 mb-4">Why Choose SOKOGO</h2>
             <p className="text-gray-600 max-w-3xl mx-auto">Our marketplace is designed for a seamless car-buying experience in Rwanda.</p>
-          </div>
+          </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-3 gap-8"
+            variants={staggerContainer(0.2, 0.1)}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.1 }}
+          >
+            <motion.div
+              className="text-center"
+              variants={fadeIn("up", "tween", 0.2, 0.6)}
+            >
               <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <CheckCircle className="h-8 w-8 text-red-600" />
               </div>
@@ -277,9 +319,12 @@ export default function Home() {
               <p className="text-gray-600">
                 Our intuitive interface makes it easy to search for and find the perfect items across all categories.
               </p>
-            </div>
+            </motion.div>
 
-            <div className="text-center">
+            <motion.div
+              className="text-center"
+              variants={fadeIn("up", "tween", 0.4, 0.6)}
+            >
               <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <CheckCircle className="h-8 w-8 text-red-600" />
               </div>
@@ -287,9 +332,12 @@ export default function Home() {
               <p className="text-gray-600">
                 We offer secure communication channels to ensure your transactions are safe and protected.
               </p>
-            </div>
+            </motion.div>
 
-            <div className="text-center">
+            <motion.div
+              className="text-center"
+              variants={fadeIn("up", "tween", 0.6, 0.6)}
+            >
               <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <CheckCircle className="h-8 w-8 text-red-600" />
               </div>
@@ -297,8 +345,8 @@ export default function Home() {
               <p className="text-gray-600">
                 Post your ads instantly and reach thousands of potential buyers across Rwanda.
               </p>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
       </section>
 
