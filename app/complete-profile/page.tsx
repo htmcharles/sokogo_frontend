@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -17,11 +17,17 @@ export default function CompleteProfile() {
   const router = useRouter()
   const { setUserAfterGoogleSignup } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
+  const [isClient, setIsClient] = useState(false)
   const [formData, setFormData] = useState({
     phoneNumber: "",
     password: "",
     confirmPassword: "",
   })
+
+  // Ensure we're on the client side
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -79,6 +85,11 @@ export default function CompleteProfile() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  // Don't render until we're on the client side
+  if (!isClient) {
+    return null
   }
 
   if (!session) {

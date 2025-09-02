@@ -42,7 +42,9 @@ export default function CarsPage() {
 
   const handleLogout = () => {
     logout()
-    window.location.href = "/"
+    if (typeof window !== "undefined") {
+      window.location.href = "/"
+    }
   }
 
   const formatLocation = (location: any) => {
@@ -107,7 +109,7 @@ export default function CarsPage() {
               <div className="text-red-600 text-lg mb-4">⚠️</div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">Error loading cars</h3>
               <p className="text-gray-500 mb-4">{error}</p>
-              <Button onClick={() => window.location.reload()} className="bg-red-600 hover:bg-red-700">
+              <Button onClick={() => typeof window !== "undefined" && window.location.reload()} className="bg-red-600 hover:bg-red-700">
                 Try Again
               </Button>
             </div>
