@@ -1,125 +1,66 @@
 "use client"
 
-import { useState, useEffect, useCallback, useMemo, useRef } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 import { useAuth } from "@/contexts/AuthContext"
-import { useEnhancedAuth } from "@/hooks/useEnhancedAuth"
+import { useRouter } from "next/navigation"
 import { RoleProtectedRoute } from "@/components/RoleProtectedRoute"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { useToast } from "@/hooks/use-toast"
 import { Plus, Package, TrendingUp, DollarSign, LogOut, Edit, Trash2, AlertCircle, RefreshCw } from "lucide-react"
 import { apiClient, type Item } from "@/lib/api"
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
 
 export default function SellerDashboard() {
-  const { user, isSeller, logout } = useAuth()
-  const enhancedAuth = useEnhancedAuth({
-    requireSeller: true,
-    showToasts: false // Disable automatic toasts to prevent red notifications
-  })
-  // Avoid router to satisfy current linter setup; use location instead
-  const { toast } = useToast()
+  const { user, logout } = useAuth()
+  const router = useRouter()
   const [products, setProducts] = useState<Item[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [selectedCategory, setSelectedCategory] = useState<string>("all")
   const [fetchError, setFetchError] = useState<string | null>(null)
+  const [selectedCategory, setSelectedCategory] = useState<string>("all")
 
-  // Use ref to prevent state updates after unmount
   const isMountedRef = useRef(true)
 
-  // Memoize filtered products to prevent unnecessary recalculations
-  const filteredProducts = useMemo(() => {
-    return selectedCategory === "all"
-      ? products
-      : products.filter(product => product.category === selectedCategory)
-  }, [products, selectedCategory])
+  // Fetch seller products
+  useEffect(() => {
+    if (!user) return
 
-  // Memoize stats calculations
-  const dashboardStats = useMemo(() => {
-    const totalProducts = products.length
-    const totalValue = products.reduce((sum, product) => sum + (product.price || 0), 0)
-    const activeProducts = products.filter(product => product.status === "active").length
-
-    return {
-      totalProducts,
-      totalValue,
-      activeProducts
-    }
-  }, [products])
-
-  // Simplified fetch with localStorage hydration fallback
-  const fetchSellerProducts = useCallback(async () => {
-    if (!isMountedRef.current) return
-
-    try {
+    const fetchProducts = async () => {
       setIsLoading(true)
       setFetchError(null)
-
-      // Hydrate from context or localStorage
-      const contextUser = user
-      const localUser = apiClient.getCurrentUser()
-      const effectiveUser = contextUser || localUser
-      const currentUserId = apiClient.getCurrentUserId()
-
-      if (!effectiveUser && !currentUserId) {
-        console.log("[SellerDashboard] No user found in context or localStorage yet")
-        return
-      }
-
-      const sellerId = (effectiveUser?._id) || currentUserId!
-
-      // Ensure API client has the correct userId
-      apiClient.setUserId(sellerId)
-
-      const firstName = effectiveUser?.firstName || ""
-      const lastName = effectiveUser?.lastName || ""
-      console.log("[v0] Fetching seller products for user:", firstName, lastName, "(" + sellerId + ")")
-      console.log("[v0] API client userId:", apiClient.getCurrentUserId())
-
-      const response = await apiClient.getMyItems()
-      if (isMountedRef.current) {
-        setProducts(response.items)
-        console.log("[v0] Successfully loaded", response.items.length, "products for seller")
-      }
-
-    } catch (error: any) {
-      console.error("Failed to fetch seller products:", error)
-      const errorMessage = error?.message || "Failed to load your listings"
-
-      if (isMountedRef.current) {
-        // Don't show destructive toasts for fetch errors - just set error state
-        setFetchError(errorMessage)
-        setProducts([])
-      }
-    } finally {
-      if (isMountedRef.current) {
-        setIsLoading(false)
+      try {
+        apiClient.setUserId(user._id)
+        const response = await apiClient.getMyItems()
+        if (isMountedRef.current) {
+          setProducts(response.items || [])
+        }
+      } catch (err: any) {
+        console.error("Failed to fetch seller products:", err)
+        if (isMountedRef.current) setFetchError(err.message || "Failed to load your listings")
+      } finally {
+        if (isMountedRef.current) setIsLoading(false)
       }
     }
-  }, [isSeller, user])
 
-  useEffect(() => {
-    fetchSellerProducts()
+    fetchProducts()
 
-    // Cleanup function to prevent state updates after unmount
     return () => {
       isMountedRef.current = false
     }
-  }, [fetchSellerProducts])
+  }, [user])
 
-  const handleLogout = useCallback(() => {
-    logout()
-  }, [logout])
+  const filteredProducts = useMemo(() => {
+    return selectedCategory === "all"
+      ? products
+      : products.filter(p => p.category === selectedCategory)
+  }, [products, selectedCategory])
 
-  const retryFetchProducts = useCallback(async () => {
-    if (!isMountedRef.current) return
+  const totalValue = useMemo(() => products.reduce((sum, p) => sum + (p.price || 0), 0), [products])
+  const activeProducts = useMemo(() => products.filter(p => p.status === "ACTIVE" || p.status === "AVAILABLE").length, [products])
 
-    setFetchError(null)
-    await fetchSellerProducts()
-  }, [fetchSellerProducts])
+  const handleLogout = () => logout()
+  const retryFetchProducts = () => setFetchError(null) || setIsLoading(true) || apiClient.getMyItems().then(res => setProducts(res.items || [])).finally(() => setIsLoading(false))
 
   return (
     <RoleProtectedRoute allowedRoles={["seller"]}>
@@ -128,33 +69,25 @@ export default function SellerDashboard() {
         <header className="bg-white border-b border-gray-200">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center h-16">
-              <div className="flex items-center">
-                <h1 className="text-2xl font-bold">
-                  <span className="text-gray-800">SELLER</span>
-                  <span className="text-red-600">DASHBOARD</span>
-                </h1>
-              </div>
+              <h1 className="text-2xl font-bold">
+                <span className="text-gray-800">SELLER</span>
+                <span className="text-red-600">DASHBOARD</span>
+              </h1>
               <div className="flex items-center space-x-4">
                 <span className="text-gray-700">Welcome, {user?.firstName}</span>
-                <Button
-                  variant="outline"
-                  onClick={handleLogout}
-                  className="border-red-600 text-red-600 hover:bg-red-600 hover:text-white bg-transparent"
-                >
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Logout
+                <Button variant="outline" onClick={handleLogout} className="border-red-600 text-red-600 hover:bg-red-600 hover:text-white">
+                  <LogOut className="w-4 h-4 mr-2" /> Logout
                 </Button>
               </div>
             </div>
           </div>
         </header>
 
-        {/* Stats and Products */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Stats Cards */}
+          {/* Stats */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <Card className="bg-white border-gray-200">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardHeader className="flex justify-between pb-2">
                 <CardTitle className="text-sm font-medium text-gray-700">Total Products</CardTitle>
                 <Package className="h-4 w-4 text-red-600" />
               </CardHeader>
@@ -165,33 +98,29 @@ export default function SellerDashboard() {
             </Card>
 
             <Card className="bg-white border-gray-200">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardHeader className="flex justify-between pb-2">
                 <CardTitle className="text-sm font-medium text-gray-700">Active Listings</CardTitle>
                 <TrendingUp className="h-4 w-4 text-red-600" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-gray-900">
-                  {products.filter(p => p.status === 'ACTIVE' || p.status === 'AVAILABLE').length}
-                </div>
+                <div className="text-2xl font-bold text-gray-900">{activeProducts}</div>
                 <p className="text-xs text-gray-500">Currently available</p>
               </CardContent>
             </Card>
 
             <Card className="bg-white border-gray-200">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardHeader className="flex justify-between pb-2">
                 <CardTitle className="text-sm font-medium text-gray-700">Total Value</CardTitle>
                 <DollarSign className="h-4 w-4 text-red-600" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-gray-900">
-                  Frw {products.reduce((sum, p) => sum + p.price, 0).toLocaleString()}
-                </div>
+                <div className="text-2xl font-bold text-gray-900">Frw {totalValue.toLocaleString()}</div>
                 <p className="text-xs text-gray-500">Combined inventory value</p>
               </CardContent>
             </Card>
           </div>
 
-          {/* Category Filter and Add Product */}
+          {/* Category Filter and Add */}
           <div className="flex justify-between items-center mb-6">
             <div className="flex items-center space-x-4">
               <Label htmlFor="category" className="text-gray-700">Filter by Category:</Label>
@@ -205,32 +134,22 @@ export default function SellerDashboard() {
                 </SelectContent>
               </Select>
             </div>
-            <Button onClick={() => { if (typeof window !== "undefined") window.location.href = "/category" }} className="bg-red-600 hover:bg-red-700">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Product
+            <Button onClick={() => router.push("/category")} className="bg-red-600 hover:bg-red-700">
+              <Plus className="w-4 h-4 mr-2" /> Add Product
             </Button>
           </div>
 
-          {/* Error Display */}
+          {/* Error */}
           {fetchError && (
             <Card className="mb-6 border-red-200 bg-red-50">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <AlertCircle className="w-5 h-5 text-red-600" />
-                    <span className="text-red-800 font-medium">Error Loading Listings</span>
-                  </div>
-                  <Button
-                    onClick={retryFetchProducts}
-                    variant="outline"
-                    size="sm"
-                    className="border-red-600 text-red-600 hover:bg-red-600 hover:text-white"
-                  >
-                    <RefreshCw className="w-4 h-4 mr-1" />
-                    Retry
-                  </Button>
+              <CardContent className="p-4 flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <AlertCircle className="w-5 h-5 text-red-600" />
+                  <span className="text-red-800 font-medium">Error Loading Listings</span>
                 </div>
-                <p className="text-red-700 text-sm mt-2">{fetchError}</p>
+                <Button onClick={retryFetchProducts} variant="outline" size="sm" className="border-red-600 text-red-600 hover:bg-red-600 hover:text-white">
+                  <RefreshCw className="w-4 h-4 mr-1" /> Retry
+                </Button>
               </CardContent>
             </Card>
           )}
@@ -242,54 +161,20 @@ export default function SellerDashboard() {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
                 <p className="mt-2 text-gray-600">Loading products...</p>
               </div>
-            ) : fetchError ? (
-              <div className="col-span-full text-center py-8">
-                <AlertCircle className="h-12 w-12 text-red-400 mx-auto mb-4" />
-                <p className="text-gray-600 mb-4">Failed to load your listings</p>
-                <Button onClick={retryFetchProducts} className="bg-red-600 hover:bg-red-700">
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                  Try Again
-                </Button>
-              </div>
             ) : filteredProducts.length === 0 ? (
               <div className="col-span-full text-center py-8">
                 <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <p className="text-gray-600">No products found</p>
-                <Button onClick={() => { if (typeof window !== "undefined") window.location.href = "/category" }} className="mt-4">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Your First Product
+                <Button onClick={() => router.push("/category")} className="mt-4">
+                  <Plus className="w-4 h-4 mr-2" /> Add Your First Product
                 </Button>
               </div>
             ) : (
               filteredProducts.map((product) => (
                 <Card key={product._id} className="bg-white border-gray-200 overflow-hidden">
-                  <div className="h-48 bg-gray-200 flex items-center justify-center relative">
-                    {product.images && product.images.length > 0 ? (
-                      product.images.length === 1 ? (
-                        <img
-                          src={product.images[0]}
-                          alt={product.title}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full p-0 m-0">
-                          <Carousel className="w-full h-full">
-                            <CarouselContent className="h-full">
-                              {product.images.map((imgSrc, idx) => (
-                                <CarouselItem key={idx} className="h-48">
-                                  <img
-                                    src={imgSrc}
-                                    alt={`${product.title} ${idx + 1}`}
-                                    className="w-full h-48 object-cover"
-                                  />
-                                </CarouselItem>
-                              ))}
-                            </CarouselContent>
-                            <CarouselPrevious className="left-2" />
-                            <CarouselNext className="right-2" />
-                          </Carousel>
-                        </div>
-                      )
+                  <div className="h-48 bg-gray-200 flex items-center justify-center">
+                    {product.images?.length ? (
+                      <img src={product.images[0]} alt={product.title} className="w-full h-full object-cover" />
                     ) : (
                       <Package className="h-12 w-12 text-gray-400" />
                     )}
@@ -303,20 +188,12 @@ export default function SellerDashboard() {
                     </div>
                     <p className="text-gray-600 text-sm mb-3 line-clamp-2">{product.description}</p>
                     <div className="flex justify-between items-center mb-3">
-                      <span className="text-lg font-bold text-green-600">
-                        {product.currency} {product.price.toLocaleString()}
-                      </span>
+                      <span className="text-lg font-bold text-green-600">{product.currency} {product.price.toLocaleString()}</span>
                       <span className="text-sm text-gray-500">{product.category}</span>
                     </div>
                     <div className="flex space-x-2">
-                      <Button variant="outline" size="sm" className="flex-1">
-                        <Edit className="w-4 h-4 mr-1" />
-                        Edit
-                      </Button>
-                      <Button variant="outline" size="sm" className="flex-1 text-red-600 hover:text-red-700">
-                        <Trash2 className="w-4 h-4 mr-1" />
-                        Delete
-                      </Button>
+                      <Button variant="outline" size="sm" className="flex-1"><Edit className="w-4 h-4 mr-1" /> Edit</Button>
+                      <Button variant="outline" size="sm" className="flex-1 text-red-600 hover:text-red-700"><Trash2 className="w-4 h-4 mr-1" /> Delete</Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -325,8 +202,6 @@ export default function SellerDashboard() {
           </div>
         </div>
       </div>
-
-      {/* Debug panel removed */}
     </RoleProtectedRoute>
   )
 }

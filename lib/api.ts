@@ -184,9 +184,6 @@ class ApiClient {
 
       const data = await response.json()
       console.log("[v0] Success response:", data)
-      console.log("[v0] Success response user:", data.user)
-      console.log("[v0] Success response user._id:", data.user?._id)
-      console.log("[v0] Success response userId:", (data as any).userId)
       return data
     } catch (error) {
       console.error("[v0] API request failed:", error)
