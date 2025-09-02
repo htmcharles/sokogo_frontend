@@ -51,7 +51,7 @@ export default function SellerDashboard() {
     }
   }, [products])
 
-  // Simplified fetch - trust the authentication state
+  // Simplified fetch with localStorage hydration fallback
   const fetchSellerProducts = useCallback(async () => {
     if (!isMountedRef.current) return
 
@@ -59,20 +59,26 @@ export default function SellerDashboard() {
       setIsLoading(true)
       setFetchError(null)
 
-      // Only check if user exists and is seller - don't validate session aggressively
-      if (!user) {
-        console.log("[SellerDashboard] No user found")
+      // Hydrate from context or localStorage
+      const contextUser = user
+      const localUser = apiClient.getCurrentUser()
+      const effectiveUser = contextUser || localUser
+      const currentUserId = apiClient.getCurrentUserId()
+
+      if (!effectiveUser && !currentUserId) {
+        console.log("[SellerDashboard] No user found in context or localStorage yet")
         return
       }
 
-      // Trust that seller role is handled by RoleProtectedRoute
-      // If we're here, user should be a seller
-
-      console.log("[v0] Fetching seller products for user:", user.firstName, user.lastName, "(" + user._id + ")")
-      console.log("[v0] API client userId:", apiClient.getCurrentUserId())
+      const sellerId = (effectiveUser?._id) || currentUserId!
 
       // Ensure API client has the correct userId
-      apiClient.setUserId(user._id)
+      apiClient.setUserId(sellerId)
+
+      const firstName = effectiveUser?.firstName || ""
+      const lastName = effectiveUser?.lastName || ""
+      console.log("[v0] Fetching seller products for user:", firstName, lastName, "(" + sellerId + ")")
+      console.log("[v0] API client userId:", apiClient.getCurrentUserId())
 
       const response = await apiClient.getMyItems()
       if (isMountedRef.current) {
@@ -145,7 +151,7 @@ export default function SellerDashboard() {
         </header>
 
         {/* Stats and Products */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">          
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <Card className="bg-white border-gray-200">

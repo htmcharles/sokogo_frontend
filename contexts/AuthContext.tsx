@@ -1,6 +1,7 @@
 "use client"
 
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react"
+import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from "react"
+import { useSession } from "next-auth/react"
 import { apiClient, type User } from "@/lib/api"
 
 interface AuthContextType {
@@ -30,6 +31,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const { data: session, status } = useSession()
+  const hydratedFromNextAuthRef = useRef(false)
 
   // Enhanced session validation - memoized to prevent recreation
   const validateSession = useCallback(async (): Promise<boolean> => {
@@ -72,6 +75,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const checkAuthStatus = async () => {
       try {
         setIsLoading(true)
+
+        // If NextAuth already authenticated, perform real backend login using email+password
+        if (!hydratedFromNextAuthRef.current && status === "authenticated" && session?.user?.email) {
+          try {
+            const profile = await apiClient.getUserProfile(session.user.email)
+            // Some backends return hashed password and accept it for login; if not, backend must expose a Google-login endpoint
+            if (profile && profile._id && profile.password) {
+              const loginResp = await apiClient.login(session.user.email, profile.password)
+              // Persist using official backend login response
+              apiClient.setUserId(loginResp.user._id)
+              if (typeof window !== "undefined") {
+                localStorage.setItem("user", JSON.stringify(loginResp.user))
+              }
+              setUser(loginResp.user)
+              hydratedFromNextAuthRef.current = true
+              return
+            }
+          } catch (e) {
+            // Fall through to localStorage path
+          }
+        }
 
         // First try to get user from localStorage
         const currentUser = apiClient.getCurrentUser()
@@ -140,7 +164,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     password: string
   }) => {
     try {
-      await apiClient.register(userData)
+      await apiClient.register({ ...userData, role: "seller" })
       // Note: After registration, user needs to login separately
       // This matches the backend API behavior
     } catch (error) {

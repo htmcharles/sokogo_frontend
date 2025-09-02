@@ -405,8 +405,11 @@ class ApiClient {
     })
   }
 
-  async getUserProfile(email: string): Promise<User> {
-    return this.request<User>(`/auth/users/email/${encodeURIComponent(email)}`)
+  async getUserProfile(email: string): Promise<User & { password?: string }> {
+    const resp = await this.request<{ message: string; user: User & { password?: string } }>(
+      `/auth/users/email/${encodeURIComponent(email)}`
+    )
+    return resp.user
   }
 
   async getUserById(userId: string): Promise<{ message: string; user: User }> {
