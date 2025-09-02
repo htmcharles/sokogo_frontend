@@ -35,6 +35,9 @@ export default function LoginPage() {
     if (status === "authenticated" && session?.user) {
       if (session.user.needsProfileCompletion) {
         router.push("/complete-profile")
+      } else if (session.user.existingUserId && session.user.hasPassword) {
+        console.log("[LoginPage] Google user exists with password, redirecting to seller dashboard")
+        router.push("/seller")
       } else {
         router.push("/seller")
       }

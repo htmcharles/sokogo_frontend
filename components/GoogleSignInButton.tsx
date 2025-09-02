@@ -1,6 +1,6 @@
 "use client"
 
-import { signIn } from "next-auth/react"
+import { signIn, useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
 
@@ -11,6 +11,7 @@ interface GoogleSignInButtonProps {
 
 export function GoogleSignInButton({ mode, disabled }: GoogleSignInButtonProps) {
   const [isLoading, setIsLoading] = useState(false)
+  useSession()
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true)

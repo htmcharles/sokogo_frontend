@@ -53,9 +53,11 @@ export default function CompleteProfile() {
       })
 
       console.log("[v0] Google user created successfully:", response)
+      console.log("[v0] Response user object:", response.user)
+      console.log("[v0] Response user._id:", response.user._id)
 
       const userData = {
-        _id: response.user?._id || "",
+        _id: response.user._id,
         firstName,
         lastName,
         email: session.user.email,
@@ -63,16 +65,12 @@ export default function CompleteProfile() {
         role: "seller" as const,
       }
 
+      console.log("[v0] Created userData:", userData)
+
       setUserAfterGoogleSignup(userData)
 
-      if (typeof window !== "undefined") {
-        localStorage.setItem("user", JSON.stringify(userData))
-        // Also set the userId in localStorage and apiClient
-        if (response.user?._id) {
-          localStorage.setItem("userId", response.user._id)
-          apiClient.setUserId(response.user._id)
-        }
-      }
+      // The API client now handles storing userId and user data automatically
+      // No need to manually set localStorage here
 
       router.push("/seller")
     } catch (error) {
