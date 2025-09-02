@@ -2,21 +2,22 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
-// Avoid useSearchParams type error by reading from window.location
-import { Search, ChevronDown } from "lucide-react"
+import { Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
 import { useAuth } from "@/contexts/AuthContext"
-import { apiClient } from "@/lib/api"   // ✅ import your API client
-import { categories } from "@/data/categories"
+import { apiClient } from "@/lib/api"   // ✅ API client
+import { selectOptions } from "@/data/selectOptions"  // ✅ import your car models list
 import type { Item } from "@/lib/api"
 import CarCard from "@/components/CarCard"
 
 export default function SearchPage() {
-  const initialParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null
+    const Makes = selectOptions.makes
+     const initialParams =
+    typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null
   const [searchQuery, setSearchQuery] = useState(initialParams?.get("q") || "")
-  const [activeCategory, setActiveCategory] = useState(initialParams?.get("category") || "MOTORS")
+  const [activeMake, setActiveMake] = useState(initialParams?.get("Make") || "")
   const [results, setResults] = useState<Item[]>([])
   const { isAuthenticated, user } = useAuth()
 
@@ -26,8 +27,12 @@ export default function SearchPage() {
       try {
         const { items } = await apiClient.getAllItems()
 
-        // Filter by selected category key
-        let filtered = items.filter((item) => item.category === activeCategory)
+        let filtered = items
+
+        // Filter by Make if selected
+        if (activeMake) {
+          filtered = filtered.filter((item) => item.features?.make === activeMake)
+        }
 
         // Filter by search query
         if (searchQuery.trim()) {
@@ -48,98 +53,37 @@ export default function SearchPage() {
     }
 
     fetchItems()
-  }, [searchQuery, activeCategory])
+  }, [searchQuery, activeMake])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
+    const params = new URLSearchParams()
+    if (searchQuery) params.set("q", searchQuery)
+    if (activeMake) params.set("Make", activeMake)
+    window.history.replaceState(null, "", `/search?${params.toString()}`)
   }
 
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center">
-              <Link href="/" className="text-2xl font-bold">
-                <span className="text-gray-800">SOKO</span>
-                <span className="text-red-600">GO</span>
-              </Link>
-            </div>
-
-            <nav className="hidden md:flex items-center space-x-8">
-              <button className="flex items-center text-gray-700 hover:text-gray-900">
-                ALL DISTRICTS
-                <ChevronDown className="ml-1 h-4 w-4" />
-              </button>
-              <Link href="/" className="text-gray-700 hover:text-gray-900">
-                HOME
-              </Link>
-              {isAuthenticated ? (
-                <>
-                  {user?.role === "admin" ? (
-                    <Link href="/admin" className="text-gray-700 hover:text-gray-900">
-                      ADMIN PANEL
-                    </Link>
-                  ) : user?.role === "seller" ? (
-                    <Link href="/seller" className="text-gray-700 hover:text-gray-900">
-                      SELLER PANEL
-                    </Link>
-                  ) : (
-                    <Link href="/dashboard" className="text-gray-700 hover:text-gray-900">
-                      DASHBOARD
-                    </Link>
-                  )}
-                  <span className="text-gray-700">Welcome, {user?.firstName}</span>
-                </>
-              ) : (
-                <>
-                  <Link href="/login" className="text-gray-700 hover:text-gray-900">
-                    LOG IN
-                  </Link>
-                  <Link href="/register" className="text-gray-700 hover:text-gray-900">
-                    REGISTER
-                  </Link>
-                </>
-              )}
-            </nav>
-
-            <Button
-              onClick={() => {
-                if (isAuthenticated) {
-                  if (user?.role === "admin") {
-                    window.location.href = "/admin"
-                  } else if (user?.role === "seller") {
-                    window.location.href = "/seller"
-                  }else {
-                    window.location.href = "/dashboard"
-                  }
-                } else {
-                  window.location.href = "/login"
-                }
-              }}
-              className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-full"
-            >
-              PLACE YOUR AD
-            </Button>
-          </div>
-        </div>
-      </header>
+      {/* ... keep your header code unchanged ... */}
 
       {/* Search Section */}
       <div className="bg-gray-100 py-8">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-6">
             <div className="flex space-x-2 mb-6 flex-wrap">
-              {Object.keys(categories).map((catKey) => (
+              {Makes.map((model) => (
                 <button
-                  key={catKey}
-                  onClick={() => setActiveCategory(catKey)}
+                  key={model.value}
+                  onClick={() => setActiveMake(model.value)}
                   className={`px-6 py-2 rounded-full font-medium ${
-                    activeCategory === catKey ? "bg-red-600 text-white" : "text-gray-700 hover:text-gray-900"
+                    activeMake === model.value
+                      ? "bg-red-600 text-white"
+                      : "text-gray-700 hover:text-gray-900"
                   }`}
                 >
-                  {categories[catKey as keyof typeof categories].label.toUpperCase()}
+                  {model.label}
                 </button>
               ))}
             </div>
@@ -151,12 +95,15 @@ export default function SearchPage() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search for anything"
+                placeholder="Search for cars, locations..."
                 className="w-full h-12 pl-4 pr-12 rounded-full border-0 text-gray-800"
               />
               <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             </div>
-            <Button type="submit" className="bg-red-600 hover:bg-red-700 text-white px-8 h-12 rounded-full">
+            <Button
+              type="submit"
+              className="bg-red-600 hover:bg-red-700 text-white px-8 h-12 rounded-full"
+            >
               Search
             </Button>
           </form>
@@ -167,7 +114,9 @@ export default function SearchPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6">
           <h2 className="text-2xl font-bold text-gray-800">
-            Search Results {searchQuery && `for "${searchQuery}"`}
+            Search Results{" "}
+            {searchQuery && `for "${searchQuery}"`}
+            {activeMake && ` in ${Makes.find(m => m.value === activeMake)?.label}`}
           </h2>
           <p className="text-gray-600 mt-2">{results.length} items found</p>
         </div>
@@ -178,10 +127,15 @@ export default function SearchPage() {
           ))}
         </div>
 
-        {results.length === 0 && searchQuery && (
+        {results.length === 0 && (searchQuery || activeMake) && (
           <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">No results found for "{searchQuery}"</p>
-            <p className="text-gray-400 mt-2">Try adjusting your search terms or browse all categories</p>
+            <p className="text-gray-500 text-lg">
+              No results found {searchQuery && `for "${searchQuery}"`}{" "}
+              {activeMake && `in ${Makes.find(m => m.value === activeMake)?.label}`}
+            </p>
+            <p className="text-gray-400 mt-2">
+              Try adjusting your search terms or browse other car models
+            </p>
           </div>
         )}
       </div>

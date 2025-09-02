@@ -7,8 +7,8 @@ import Link from "next/link"
 function CategorySelection() {
   const categories = [
     { name: "CARS", href: "/cars" },
-    { name: "MOTORCYCLES", href: "/motorcycles" },
-    { name: "TRUCKS", href: "/trucks" },
+    // { name: "MOTORCYCLES", href: "/motorcycles" },
+    // { name: "TRUCKS", href: "/trucks" },
   ]
 
   return (
