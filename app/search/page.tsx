@@ -2,20 +2,21 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
-import { useSearchParams } from "next/navigation"
+// Avoid useSearchParams type error by reading from window.location
 import { Search, ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
 import { useAuth } from "@/contexts/AuthContext"
 import { apiClient } from "@/lib/api"   // ✅ import your API client
+import { categories } from "@/data/categories"
 import type { Item } from "@/lib/api"
 import CarCard from "@/components/CarCard"
 
 export default function SearchPage() {
-  const searchParams = useSearchParams()
-  const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "")
-  const [activeCategory, setActiveCategory] = useState(searchParams.get("category") || "MOTORS")
+  const initialParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null
+  const [searchQuery, setSearchQuery] = useState(initialParams?.get("q") || "")
+  const [activeCategory, setActiveCategory] = useState(initialParams?.get("category") || "MOTORS")
   const [results, setResults] = useState<Item[]>([])
   const { isAuthenticated, user } = useAuth()
 
@@ -25,7 +26,8 @@ export default function SearchPage() {
       try {
         const { items } = await apiClient.getAllItems()
 
-        let filtered = items.filter((item) => item.category === "MOTORS")
+        // Filter by selected category key
+        let filtered = items.filter((item) => item.category === activeCategory)
 
         // Filter by search query
         if (searchQuery.trim()) {
@@ -128,15 +130,18 @@ export default function SearchPage() {
       <div className="bg-gray-100 py-8">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-6">
-            <div className="flex space-x-4 mb-6">
-              <button
-                onClick={() => setActiveCategory("MOTORS")}
-                className={`px-6 py-2 rounded-full font-medium ${
-                  activeCategory === "MOTORS" ? "bg-red-600 text-white" : "text-gray-700 hover:text-gray-900"
-                }`}
-              >
-                MOTORS
-              </button>
+            <div className="flex space-x-2 mb-6 flex-wrap">
+              {Object.keys(categories).map((catKey) => (
+                <button
+                  key={catKey}
+                  onClick={() => setActiveCategory(catKey)}
+                  className={`px-6 py-2 rounded-full font-medium ${
+                    activeCategory === catKey ? "bg-red-600 text-white" : "text-gray-700 hover:text-gray-900"
+                  }`}
+                >
+                  {categories[catKey as keyof typeof categories].label.toUpperCase()}
+                </button>
+              ))}
             </div>
           </div>
 
