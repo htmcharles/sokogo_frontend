@@ -11,6 +11,8 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { useAuth } from "@/contexts/AuthContext"
 import { GoogleSignInButton } from "@/components/GoogleSignInButton"
 import { useSession } from "next-auth/react"
+import { useRef } from "react"
+import { apiClient } from "@/lib/api"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -20,7 +22,8 @@ export default function LoginPage() {
   const [successMessage, setSuccessMessage] = useState("")
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { login } = useAuth()
+  const { login, user: authUser } = useAuth()
+  const didBackendLoginRef = useRef(false)
   const { data: session, status } = useSession()
 
   // Check for success message from registration
@@ -32,17 +35,37 @@ export default function LoginPage() {
   }, [searchParams])
 
   useEffect(() => {
-    if (status === "authenticated" && session?.user) {
-      if (session.user.needsProfileCompletion) {
-        router.push("/complete-profile")
-      } else if (session.user.existingUserId && session.user.hasPassword) {
-        console.log("[LoginPage] Google user exists with password, redirecting to seller dashboard")
-        router.push("/seller")
-      } else {
-        router.push("/seller")
+    const run = async () => {
+      if (status === "authenticated" && session?.user) {
+        if ((session.user as any)?.needsProfileCompletion) {
+          router.push("/complete-profile")
+          return
+        }
+
+        // Perform backend login exactly once after Google auth
+        if (!didBackendLoginRef.current && session.user.email) {
+          try {
+            didBackendLoginRef.current = true
+            const profile = await apiClient.getUserProfile(session.user.email)
+            if (profile?.password) {
+              await login(session.user.email, profile.password)
+              router.push("/seller")
+              return
+            }
+          } catch (e) {
+            // Fall back to waiting for authUser or manual login
+          }
+        }
+
+        // If our auth user is already present, redirect
+        if (authUser) {
+          console.log("[LoginPage] Auth user present, redirecting to seller dashboard")
+          router.push("/seller")
+        }
       }
     }
-  }, [session, status, router])
+    run()
+  }, [session, status, authUser, router, login])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
