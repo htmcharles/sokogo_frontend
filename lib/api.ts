@@ -10,16 +10,31 @@ export interface User {
   phoneNumber: string
   role: "buyer" | "seller" | "admin"
   createdAt?: string
+  password?: string // Optional password field for Google OAuth users
 }
 
 export interface LoginResponse {
   user: User
   message: string
+  token?: string
+  userId?: string
+  sessionInfo?: {
+    expiresIn: string
+    tokenType: string
+    loginTime: string
+  }
 }
 
 export interface RegisterResponse {
   message: string
-  user: Omit<User, "_id">
+  user: User // Changed from Omit<User, "_id"> to User since backend returns _id
+  token?: string
+  userId?: string
+  sessionInfo?: {
+    expiresIn: string
+    tokenType: string
+    loginTime: string
+  }
 }
 
 export interface ApiError {
@@ -97,14 +112,14 @@ class ApiClient {
     if (typeof window !== "undefined") {
       // First try to get from localStorage
       this.userId = localStorage.getItem("userId")
-      
+
       // If no userId in localStorage, try to get from user object
-      if (!this.userId) {
+      if (!this.userId || this.userId === "temp-id" || this.userId.trim() === "") {
         const userStr = localStorage.getItem("user")
         if (userStr) {
           try {
             const user = JSON.parse(userStr)
-            if (user._id && user._id !== "temp-id") {
+            if (user._id && user._id !== "temp-id" && user._id.trim() !== "") {
               this.userId = user._id
               localStorage.setItem("userId", user._id)
               console.log("[v0] Set userId from user object:", this.userId)
@@ -114,17 +129,17 @@ class ApiClient {
           }
         }
       }
-      
+
       console.log("[v0] Refreshed user ID from localStorage:", this.userId)
     }
   }
 
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`
-    
+
     // Always refresh userId from localStorage before making requests
     this.refreshUserId()
-    
+
     // Create headers object
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
@@ -169,6 +184,9 @@ class ApiClient {
 
       const data = await response.json()
       console.log("[v0] Success response:", data)
+      console.log("[v0] Success response user:", data.user)
+      console.log("[v0] Success response user._id:", data.user?._id)
+      console.log("[v0] Success response userId:", (data as any).userId)
       return data
     } catch (error) {
       console.error("[v0] API request failed:", error)
@@ -186,13 +204,17 @@ class ApiClient {
       body: JSON.stringify({ email, password }),
     })
 
-    // Store user ID for future requests
-    if (response.user._id) {
-      this.userId = response.user._id
+    // Store user ID for future requests - check both user._id and userId fields
+    const userId = response.user._id || (response as any).userId
+    if (userId) {
+      this.userId = userId
       if (typeof window !== "undefined") {
-        localStorage.setItem("userId", response.user._id)
+        localStorage.setItem("userId", userId)
         localStorage.setItem("user", JSON.stringify(response.user))
       }
+      console.log("[v0] Login - Stored user ID:", userId)
+    } else {
+      console.warn("[v0] Login - No user ID found in response:", response)
     }
 
     return response
@@ -207,10 +229,25 @@ class ApiClient {
     role: "seller"
   }): Promise<RegisterResponse> {
     console.log("[v0] Attempting registration with data:", { ...userData, password: "[HIDDEN]" })
-    return this.request<RegisterResponse>("/auth/register", {
+    const response = await this.request<RegisterResponse>("/auth/register", {
       method: "POST",
       body: JSON.stringify(userData),
     })
+
+    // Store user ID for future requests if the response includes it
+    const userId = response.user._id || (response as any).userId
+    if (userId) {
+      this.userId = userId
+      if (typeof window !== "undefined") {
+        localStorage.setItem("userId", userId)
+        localStorage.setItem("user", JSON.stringify(response.user))
+      }
+      console.log("[v0] Register - Stored user ID:", userId)
+    } else {
+      console.warn("[v0] Register - No user ID found in response:", response)
+    }
+
+    return response
   }
 
   async createGoogleUser(userData: {
@@ -226,10 +263,27 @@ class ApiClient {
       ...userData,
       password: userData.password ? "[HIDDEN]" : "none",
     })
-    return this.request<RegisterResponse>("/auth/register", {
+    const response = await this.request<RegisterResponse>("/auth/register", {
       method: "POST",
       body: JSON.stringify(userData),
     })
+
+    // Store user ID for future requests if the response includes it
+    const userId = response.user._id || (response as any).userId
+    if (userId) {
+      this.userId = userId
+      if (typeof window !== "undefined") {
+        localStorage.setItem("userId", userId)
+        localStorage.setItem("user", JSON.stringify(response.user))
+      }
+      console.log("[v0] createGoogleUser - Stored user ID:", userId)
+    } else {
+      console.warn("[v0] createGoogleUser - No user ID found in response:", response)
+    }
+
+    console.log("[v0] createGoogleUser - Response user ID:", response.user?._id)
+
+    return response
   }
 
   // Items methods
@@ -352,7 +406,7 @@ class ApiClient {
   }
 
   async getUserProfile(email: string): Promise<User> {
-    return this.request<User>(`/auth/profile?email=${encodeURIComponent(email)}`)
+    return this.request<User>(`/auth/users/email/${encodeURIComponent(email)}`)
   }
 
   async getUserById(userId: string): Promise<{ message: string; user: User }> {
@@ -361,7 +415,7 @@ class ApiClient {
 
   // Utility methods
   setUserId(userId: string) {
-    if (userId && userId !== "temp-id") {
+    if (userId && userId !== "temp-id" && userId.trim() !== "") {
       this.userId = userId
       if (typeof window !== "undefined") {
         localStorage.setItem("userId", userId)
@@ -391,13 +445,13 @@ class ApiClient {
   isAuthenticated(): boolean {
     // Refresh user ID from localStorage before checking
     this.refreshUserId()
-    return this.userId !== null
+    return this.userId !== null && this.userId !== "temp-id" && this.userId.trim() !== ""
   }
 
   // Method to ensure user ID is set before making authenticated requests
   ensureAuthenticated(): boolean {
     this.refreshUserId()
-    if (!this.userId || this.userId === "temp-id") {
+    if (!this.userId || this.userId === "temp-id" || this.userId.trim() === "") {
       console.error("[v0] No valid user ID found. User must be logged in.")
       console.error("[v0] Current userId:", this.userId)
       console.error("[v0] localStorage userId:", typeof window !== "undefined" ? localStorage.getItem("userId") : "N/A")
@@ -414,7 +468,7 @@ class ApiClient {
       // First check localStorage
       this.refreshUserId()
 
-      if (!this.userId || this.userId === "temp-id") {
+      if (!this.userId || this.userId === "temp-id" || this.userId.trim() === "") {
         return {
           isValid: false,
           user: null,
@@ -500,10 +554,10 @@ class ApiClient {
     const sellerId = this.getAuthenticatedUserId()
 
     const formData = new FormData()
-    
+
     // Always include seller userId in FormData for backend verification
     formData.append("seller", sellerId)
-    
+
     // Append all photos
     files.forEach((file, index) => {
       formData.append(`photos`, file) // Use same key for multiple files
@@ -537,6 +591,30 @@ class ApiClient {
       message: result.message,
       imageUrl: result.imageUrls?.[0]
     }))
+  }
+
+        // Google OAuth login for existing users
+  async loginWithGoogleOAuth(email: string, googleId: string): Promise<LoginResponse> {
+    console.log("[v0] Attempting Google OAuth login for existing user:", email)
+
+    // Get user by email (this should return user with password for Google OAuth users)
+    const existingUser = await this.getUserProfile(email)
+
+    if (existingUser && existingUser._id) {
+      console.log("[v0] User exists, checking for password")
+
+      if (existingUser.password) {
+        console.log("[v0] Found password, performing normal login")
+
+        // Use the existing email and password for normal login
+        return await this.login(email, existingUser.password)
+      } else {
+        console.log("[v0] No password found, user needs to complete profile")
+        throw new Error("User exists but no password available - needs profile completion")
+      }
+    } else {
+      throw new Error("User not found")
+    }
   }
 }
 

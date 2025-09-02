@@ -41,7 +41,29 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async signIn({ user, account, profile }) {
       if (account?.provider === "google") {
-        return true
+        try {
+          // Check if user exists by email
+          const existingUser = await apiClient.getUserProfile(user.email!)
+
+          if (existingUser && existingUser._id) {
+            // User exists, check if they have a password
+            if (existingUser.password) {
+              console.log("[NextAuth] Google user exists with password:", existingUser.email)
+              return true
+            } else {
+              console.log("[NextAuth] Google user exists but needs profile completion:", existingUser.email)
+              return true
+            }
+          } else {
+            // User doesn't exist, needs profile completion
+            console.log("[NextAuth] Google user doesn't exist, needs profile completion")
+            return true
+          }
+        } catch (error) {
+          console.error("[NextAuth] Error checking user existence:", error)
+          // If we can't check, assume user needs profile completion
+          return true
+        }
       }
       return true
     },
@@ -50,7 +72,29 @@ export const authOptions: NextAuthOptions = {
         token.role = user.role
       }
       if (account?.provider === "google") {
-        token.needsProfileCompletion = true
+        // Check if user exists and has a password
+        try {
+          const existingUser = await apiClient.getUserProfile(token.email!)
+          if (existingUser && existingUser._id) {
+            if (existingUser.password) {
+              // User exists with password, don't need profile completion
+              token.needsProfileCompletion = false
+              token.existingUserId = existingUser._id
+              token.hasPassword = true
+            } else {
+              // User exists but no password, needs profile completion
+              token.needsProfileCompletion = true
+              token.existingUserId = existingUser._id
+              token.hasPassword = false
+            }
+          } else {
+            // User doesn't exist, needs profile completion
+            token.needsProfileCompletion = true
+          }
+        } catch (error) {
+          console.error("[NextAuth] Error in JWT callback:", error)
+          token.needsProfileCompletion = true
+        }
       }
       return token
     },
@@ -58,13 +102,14 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         session.user.role = token.role as string
         session.user.needsProfileCompletion = token.needsProfileCompletion as boolean
+        session.user.existingUserId = token.existingUserId as string
+        session.user.hasPassword = token.hasPassword as boolean
       }
       return session
     },
   },
   pages: {
     signIn: "/login",
-    signUp: "/register",
   },
   session: {
     strategy: "jwt",
