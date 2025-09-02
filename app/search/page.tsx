@@ -22,6 +22,8 @@ export default function SearchPage() {
   const { isAuthenticated, user } = useAuth()
 
   // ✅ Fetch items from DB
+  // Search logic: First filter by search query, then by Make feature
+  // This ensures that Make filter only applies to items that match the search query
   useEffect(() => {
     const fetchItems = async () => {
       try {
@@ -29,23 +31,33 @@ export default function SearchPage() {
 
         let filtered = items
 
-        // Filter by Make if selected
-        if (activeMake) {
-          filtered = filtered.filter((item) => item.features?.make === activeMake)
-        }
-
-        // Filter by search query
+        // First filter by search query
         if (searchQuery.trim()) {
           const searchText = searchQuery.toLowerCase()
+          console.log(`[Search] Filtering by query: "${searchText}"`)
+          const beforeQueryFilter = filtered.length
           filtered = filtered.filter(
             (item) =>
               (item.title && item.title.toLowerCase().includes(searchText)) ||
               (item.description && item.description.toLowerCase().includes(searchText)) ||
               (item.location?.district && item.location.district.toLowerCase().includes(searchText)) ||
-              (item.location?.city && item.location.city.toLowerCase().includes(searchText))
+              (item.location?.city && item.location.city.toLowerCase().includes(searchText)) ||
+              (item.features?.make && item.features.make.toLowerCase().includes(searchText)) ||
+              (item.features?.brand && item.features.brand.toLowerCase().includes(searchText)) ||
+              (item.features?.model && item.features.model.toLowerCase().includes(searchText))
           )
+          console.log(`[Search] After query filter: ${beforeQueryFilter} -> ${filtered.length} items`)
         }
 
+        // Then filter by Make if selected (only from the search results)
+        if (activeMake) {
+          console.log(`[Search] Filtering by Make: "${activeMake}"`)
+          const beforeMakeFilter = filtered.length
+          filtered = filtered.filter((item) => item.features?.make === activeMake)
+          console.log(`[Search] After Make filter: ${beforeMakeFilter} -> ${filtered.length} items`)
+        }
+
+        console.log(`[Search] Final results: ${filtered.length} items found`)
         setResults(filtered)
       } catch (error) {
         console.error("Error fetching items:", error)
