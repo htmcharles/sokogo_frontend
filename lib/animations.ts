@@ -1,7 +1,7 @@
 export const textVariant = (delay: number) => {
   return {
     hidden: {
-      y: -30,
+      y: -50,
       opacity: 0,
     },
     show: {
@@ -9,10 +9,8 @@ export const textVariant = (delay: number) => {
       opacity: 1,
       transition: {
         type: "spring" as const,
-        duration: 0.6,
+        duration: 1.25,
         delay: delay,
-        stiffness: 100,
-        damping: 20,
       },
     },
   };
@@ -21,8 +19,8 @@ export const textVariant = (delay: number) => {
 export const fadeIn = (direction: string, type: string, delay: number, duration: number) => {
   return {
     hidden: {
-      x: direction === "left" ? 50 : direction === "right" ? -50 : 0,
-      y: direction === "up" ? 50 : direction === "down" ? -50 : 0,
+      x: direction === "left" ? 100 : direction === "right" ? -100 : 0,
+      y: direction === "up" ? 100 : direction === "down" ? -100 : 0,
       opacity: 0,
     },
     show: {
@@ -32,8 +30,8 @@ export const fadeIn = (direction: string, type: string, delay: number, duration:
       transition: {
         type: type as any,
         delay: delay,
-        duration: Math.min(duration, 0.5),
-        ease: "easeOut" as const,
+        duration: duration,
+        ease: "easeOut",
       },
     },
   };
@@ -52,7 +50,7 @@ export const zoomIn = (delay: number, duration: number) => {
         type: "tween" as const,
         delay: delay,
         duration: duration,
-        ease: "easeOut" as const,
+        ease: "easeOut",
       },
     },
   };
@@ -71,7 +69,7 @@ export const slideIn = (direction: string, type: string, delay: number, duration
         type: type as any,
         delay: delay,
         duration: duration,
-        ease: "easeOut" as const,
+        ease: "easeOut",
       },
     },
   };
@@ -82,8 +80,8 @@ export const staggerContainer = (staggerChildren: number, delayChildren: number 
     hidden: {},
     show: {
       transition: {
-        staggerChildren: Math.min(staggerChildren, 0.1),
-        delayChildren: Math.min(delayChildren, 0.1),
+        staggerChildren: staggerChildren,
+        delayChildren: delayChildren,
       },
     },
   };
@@ -121,7 +119,7 @@ export const tiltVariant = {
 // Card animation variants
 export const cardVariant = {
   hidden: {
-    y: 30,
+    y: 50,
     opacity: 0,
   },
   show: {
@@ -129,19 +127,17 @@ export const cardVariant = {
     opacity: 1,
     transition: {
       type: "spring" as const,
-      stiffness: 200,
-      damping: 25,
-      duration: 0.4,
+      stiffness: 300,
+      damping: 30,
     },
   },
   hover: {
-    y: -3,
-    scale: 1.01,
+    y: -5,
+    scale: 1.02,
     transition: {
       type: "spring" as const,
-      stiffness: 300,
-      damping: 15,
-      duration: 0.2,
+      stiffness: 400,
+      damping: 10,
     },
   },
 };

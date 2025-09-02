@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
-import { Search } from "lucide-react"
+import { Search, ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
@@ -10,7 +10,7 @@ import { motion } from "framer-motion"
 import { useAuth } from "@/contexts/AuthContext"
 import { apiClient } from "@/lib/api"   // ✅ API client
 import { selectOptions } from "@/data/selectOptions"  // ✅ import your car models list
-import { staggerContainer, fadeIn } from "@/lib/animations"
+import { staggerContainer, fadeIn, textVariant } from "@/lib/animations"
 import type { Item } from "@/lib/api"
 import SearchCarCard from "@/components/SearchCarCard"
 
@@ -85,87 +85,132 @@ export default function SearchPage() {
       {/* ... keep your header code unchanged ... */}
 
       {/* Search Section */}
-      <div className="bg-gray-100 py-8">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-6">
-            <div className="flex space-x-2 mb-6 flex-wrap">
-              {Makes.map((model) => (
-                <button
-                  key={model.value}
-                  onClick={() => setActiveMake(model.value)}
-                  className={`px-6 py-2 rounded-full font-medium ${
-                    activeMake === model.value
-                      ? "bg-red-600 text-white"
-                      : "text-gray-700 hover:text-gray-900"
-                  }`}
-                >
-                  {model.label}
-                </button>
-              ))}
-            </div>
-          </div>
+      <div
+        className="relative h-96 bg-cover bg-center py-8"
+        style={{
+          backgroundImage: `url('/city-background.png')`,
+        }}
+      >
+        <div className="absolute inset-0 bg-black/20"></div>
+        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex flex-col justify-center">
+          <motion.div
+            className="text-white mb-8"
+            variants={textVariant(0.2)}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+          >
+            <h1 className="text-4xl font-bold mb-4">Find Your Perfect Car</h1>
+            <p className="text-xl mb-4">Searching in RWANDA &gt; MOTORS &gt; CARS</p>
+          </motion.div>
 
-          <form onSubmit={handleSearch} className="flex gap-4">
+          <motion.form
+            onSubmit={handleSearch}
+            className="flex gap-4 max-w-2xl"
+            variants={fadeIn("up", "tween", 0.4, 0.6)}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+          >
             <div className="flex-1 relative">
               <Input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search for cars, locations..."
-                className="w-full h-12 pl-4 pr-12 rounded-full border-0 text-gray-800"
+                placeholder="Search for anything"
+                className="w-full h-14 pl-6 pr-12 rounded-full border-0 text-gray-900 bg-white/95 backdrop-blur-sm shadow-lg"
               />
-              <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500" />
             </div>
             <Button
               type="submit"
-              className="bg-red-600 hover:bg-red-700 text-white px-8 h-12 rounded-full"
+              className="bg-red-600 hover:bg-red-700 text-white px-8 h-14 rounded-full shadow-lg font-semibold"
             >
               Search
             </Button>
-          </form>
+          </motion.form>
         </div>
       </div>
 
-      {/* Results */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <motion.div
-          className="mb-6"
-          variants={fadeIn("up", "tween", 0.2, 0.6)}
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true }}
-        >
-          <h2 className="text-2xl font-bold text-gray-800">
-            Search Results{" "}
-            {searchQuery && `for "${searchQuery}"`}
-            {activeMake && ` in ${Makes.find(m => m.value === activeMake)?.label}`}
-          </h2>
-          <p className="text-gray-600 mt-2">{results.length} items found</p>
-        </motion.div>
-
-        <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
-          variants={staggerContainer(0.1, 0.2)}
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, amount: 0.1 }}
-        >
-          {results.map((item) => (
-            <SearchCarCard key={item._id} car={item} />
-          ))}
-        </motion.div>
-
-        {results.length === 0 && (searchQuery || activeMake) && (
-          <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">
-              No results found {searchQuery && `for "${searchQuery}"`}{" "}
-              {activeMake && `in ${Makes.find(m => m.value === activeMake)?.label}`}
-            </p>
-            <p className="text-gray-400 mt-2">
-              Try adjusting your search terms or browse other car models
-            </p>
+      {/* Results Section */}
+      <div className="bg-gray-50 py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Title and Sort */}
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-800">
+                CARS FOR SALE IN RWANDA
+              </h1>
+              <p className="text-gray-600">• {results.length} ADS</p>
+            </div>
           </div>
-        )}
+
+          {/* Make Filters */}
+          <div className="flex space-x-2 mb-6 flex-wrap">
+            {Makes.map((model) => {
+              // Calculate actual count for this make
+              const makeCount = results.filter((item) =>
+                item.features?.make && item.features.make.toLowerCase() === model.value.toLowerCase()
+              ).length;
+
+              return (
+                <button
+                  key={model.value}
+                  onClick={() => setActiveMake(model.value)}
+                  className={`px-4 py-2 rounded-full text-sm font-medium ${
+                    activeMake === model.value
+                      ? "bg-blue-600 text-white"
+                      : "bg-white text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  {model.label} ({makeCount})
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex gap-8">
+          {/* Car Listings */}
+          <div className="flex-1">
+            <motion.div
+              className="space-y-6"
+              variants={staggerContainer(0.1, 0.2)}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, amount: 0.1 }}
+            >
+              {results.map((item) => (
+                <SearchCarCard key={item._id} car={item} />
+              ))}
+            </motion.div>
+
+            {results.length === 0 && (searchQuery || activeMake) && (
+              <div className="text-center py-12">
+                <p className="text-gray-500 text-lg">
+                  No results found {searchQuery && `for "${searchQuery}"`}{" "}
+                  {activeMake && `in ${Makes.find(m => m.value === activeMake)?.label}`}
+                </p>
+                <p className="text-gray-400 mt-2">
+                  Try adjusting your search terms or browse other car models
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Advertisement Banner
+          <div className="w-64">
+            <div className="bg-red-600 text-white p-6 rounded-lg flex items-center justify-center text-center sticky top-8">
+              <div>
+                <h3 className="text-lg font-bold mb-2">ADVERT</h3>
+                <p className="text-sm">RELATED TO CARS</p>
+              </div>
+            </div>
+          </div> */}
+        </div>
       </div>
     </div>
   )
