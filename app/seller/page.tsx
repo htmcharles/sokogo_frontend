@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect, useRef, useMemo } from "react"
-import { motion } from "framer-motion"
 import { useAuth } from "@/contexts/AuthContext"
 import { useRouter } from "next/navigation"
 import { RoleProtectedRoute } from "@/components/RoleProtectedRoute"
@@ -12,7 +11,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { Plus, Package, TrendingUp, DollarSign, LogOut, Edit, Trash2, AlertCircle, RefreshCw } from "lucide-react"
 import { apiClient, type Item } from "@/lib/api"
-import { textVariant, fadeIn, staggerContainer, cardVariant } from "@/lib/animations"
 
 export default function SellerDashboard() {
   const { user, logout } = useAuth()
@@ -26,25 +24,19 @@ export default function SellerDashboard() {
 
   // Fetch seller products
   useEffect(() => {
-    if (!user) {
-      console.log("[SellerDashboard] No user found, skipping fetch")
-      return
-    }
+    if (!user) return
 
     const fetchProducts = async () => {
       setIsLoading(true)
       setFetchError(null)
       try {
-        console.log("[SellerDashboard] Fetching products for user:", user._id, user.firstName)
         apiClient.setUserId(user._id)
         const response = await apiClient.getMyItems()
-        console.log("[SellerDashboard] API response:", response)
         if (isMountedRef.current) {
           setProducts(response.items || [])
-          console.log("[SellerDashboard] Set products:", response.items?.length || 0, "items")
         }
       } catch (err: any) {
-        console.error("[SellerDashboard] Failed to fetch seller products:", err)
+        console.error("Failed to fetch seller products:", err)
         if (isMountedRef.current) setFetchError(err.message || "Failed to load your listings")
       } finally {
         if (isMountedRef.current) setIsLoading(false)
@@ -68,11 +60,7 @@ export default function SellerDashboard() {
   const activeProducts = useMemo(() => products.filter(p => p.status === "ACTIVE" || p.status === "AVAILABLE").length, [products])
 
   const handleLogout = () => logout()
-  const retryFetchProducts = () => {
-    setFetchError(null)
-    setIsLoading(true)
-    apiClient.getMyItems().then(res => setProducts(res.items || [])).finally(() => setIsLoading(false))
-  }
+  const retryFetchProducts = () => setFetchError(null) || setIsLoading(true) || apiClient.getMyItems().then(res => setProducts(res.items || [])).finally(() => setIsLoading(false))
 
   return (
     <RoleProtectedRoute allowedRoles={["seller"]}>
@@ -97,61 +85,43 @@ export default function SellerDashboard() {
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Stats */}
-          <motion.div
-            className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
-            variants={staggerContainer(0.1, 0.1)}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, amount: 0.1 }}
-          >
-            <motion.div variants={cardVariant}>
-              <Card className="bg-white border-gray-200">
-                <CardHeader className="flex justify-between pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-700">Total Products</CardTitle>
-                  <Package className="h-4 w-4 text-red-600" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-gray-900">{products.length}</div>
-                  <p className="text-xs text-gray-500">Products in your inventory</p>
-                </CardContent>
-              </Card>
-            </motion.div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <Card className="bg-white border-gray-200">
+              <CardHeader className="flex justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-gray-700">Total Products</CardTitle>
+                <Package className="h-4 w-4 text-red-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-gray-900">{products.length}</div>
+                <p className="text-xs text-gray-500">Products in your inventory</p>
+              </CardContent>
+            </Card>
 
-            <motion.div variants={cardVariant}>
-              <Card className="bg-white border-gray-200">
-                <CardHeader className="flex justify-between pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-700">Active Listings</CardTitle>
-                  <TrendingUp className="h-4 w-4 text-red-600" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-gray-900">{activeProducts}</div>
-                  <p className="text-xs text-gray-500">Currently available</p>
-                </CardContent>
-              </Card>
-            </motion.div>
+            <Card className="bg-white border-gray-200">
+              <CardHeader className="flex justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-gray-700">Active Listings</CardTitle>
+                <TrendingUp className="h-4 w-4 text-red-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-gray-900">{activeProducts}</div>
+                <p className="text-xs text-gray-500">Currently available</p>
+              </CardContent>
+            </Card>
 
-            <motion.div variants={cardVariant}>
-              <Card className="bg-white border-gray-200">
-                <CardHeader className="flex justify-between pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-700">Total Value</CardTitle>
-                  <DollarSign className="h-4 w-4 text-red-600" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-gray-900">Frw {totalValue.toLocaleString()}</div>
-                  <p className="text-xs text-gray-500">Combined inventory value</p>
-                </CardContent>
-              </Card>
-            </motion.div>
-          </motion.div>
+            <Card className="bg-white border-gray-200">
+              <CardHeader className="flex justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-gray-700">Total Value</CardTitle>
+                <DollarSign className="h-4 w-4 text-red-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-gray-900">Frw {totalValue.toLocaleString()}</div>
+                <p className="text-xs text-gray-500">Combined inventory value</p>
+              </CardContent>
+            </Card>
+          </div>
 
           {/* Category Filter and Add */}
-          <motion.div
-            className="flex justify-between items-center mb-6"
-            variants={fadeIn("up", "tween", 0.2, 0.4)}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true }}
-          >
+          <div className="flex justify-between items-center mb-6">
             <div className="flex items-center space-x-4">
               <Label htmlFor="category" className="text-gray-700">Filter by Category:</Label>
               <Select value={selectedCategory} onValueChange={setSelectedCategory}>
@@ -164,10 +134,10 @@ export default function SellerDashboard() {
                 </SelectContent>
               </Select>
             </div>
-            <Button onClick={() => router.push("/cars")} className="bg-red-600 hover:bg-red-700">
+            <Button onClick={() => router.push("/category")} className="bg-red-600 hover:bg-red-700">
               <Plus className="w-4 h-4 mr-2" /> Add Product
             </Button>
-          </motion.div>
+          </div>
 
           {/* Error */}
           {fetchError && (
@@ -185,13 +155,7 @@ export default function SellerDashboard() {
           )}
 
           {/* Products Grid */}
-          <motion.div
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-            variants={staggerContainer(0.1, 0.1)}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, amount: 0.1 }}
-          >
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {isLoading ? (
               <div className="col-span-full text-center py-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
@@ -201,43 +165,41 @@ export default function SellerDashboard() {
               <div className="col-span-full text-center py-8">
                 <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <p className="text-gray-600">No products found</p>
-                <Button onClick={() => router.push("/cars")} className="mt-4">
+                <Button onClick={() => router.push("/category")} className="mt-4">
                   <Plus className="w-4 h-4 mr-2" /> Add Your First Product
                 </Button>
               </div>
             ) : (
               filteredProducts.map((product) => (
-                <motion.div key={product._id} variants={cardVariant}>
-                  <Card className="bg-white border-gray-200 overflow-hidden">
-                    <div className="h-48 bg-gray-200 flex items-center justify-center">
-                      {product.images?.length ? (
-                        <img src={product.images[0]} alt={product.title} className="w-full h-full object-cover" />
-                      ) : (
-                        <Package className="h-12 w-12 text-gray-400" />
-                      )}
+                <Card key={product._id} className="bg-white border-gray-200 overflow-hidden">
+                  <div className="h-48 bg-gray-200 flex items-center justify-center">
+                    {product.images?.length ? (
+                      <img src={product.images[0]} alt={product.title} className="w-full h-full object-cover" />
+                    ) : (
+                      <Package className="h-12 w-12 text-gray-400" />
+                    )}
+                  </div>
+                  <CardContent className="p-4">
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className="font-semibold text-lg line-clamp-2">{product.title}</h3>
+                      <Badge variant={product.status === 'ACTIVE' || product.status === 'AVAILABLE' ? 'default' : 'secondary'}>
+                        {product.status}
+                      </Badge>
                     </div>
-                    <CardContent className="p-4">
-                      <div className="flex justify-between items-start mb-2">
-                        <h3 className="font-semibold text-lg line-clamp-2">{product.title}</h3>
-                        <Badge variant={product.status === 'ACTIVE' || product.status === 'AVAILABLE' ? 'default' : 'secondary'}>
-                          {product.status}
-                        </Badge>
-                      </div>
-                      <p className="text-gray-600 text-sm mb-3 line-clamp-2">{product.description}</p>
-                      <div className="flex justify-between items-center mb-3">
-                        <span className="text-lg font-bold text-green-600">{product.currency} {product.price.toLocaleString()}</span>
-                        <span className="text-sm text-gray-500">{product.category}</span>
-                      </div>
-                      <div className="flex space-x-2">
-                        <Button variant="outline" size="sm" className="flex-1"><Edit className="w-4 h-4 mr-1" /> Edit</Button>
-                        <Button variant="outline" size="sm" className="flex-1 text-red-600 hover:text-red-700"><Trash2 className="w-4 h-4 mr-1" /> Delete</Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
+                    <p className="text-gray-600 text-sm mb-3 line-clamp-2">{product.description}</p>
+                    <div className="flex justify-between items-center mb-3">
+                      <span className="text-lg font-bold text-green-600">{product.currency} {product.price.toLocaleString()}</span>
+                      <span className="text-sm text-gray-500">{product.category}</span>
+                    </div>
+                    <div className="flex space-x-2">
+                      <Button variant="outline" size="sm" className="flex-1"><Edit className="w-4 h-4 mr-1" /> Edit</Button>
+                      <Button variant="outline" size="sm" className="flex-1 text-red-600 hover:text-red-700"><Trash2 className="w-4 h-4 mr-1" /> Delete</Button>
+                    </div>
+                  </CardContent>
+                </Card>
               ))
             )}
-          </motion.div>
+          </div>
         </div>
       </div>
     </RoleProtectedRoute>

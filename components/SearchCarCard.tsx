@@ -53,114 +53,110 @@ export default function CarCard({ car, className = "" }: CarCardProps) {
     }
   }
 
-  return (
+    return (
     <Link href={`/description/${car._id}`} className={`block ${className}`}>
-            <motion.div
-        className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 group"
+      <motion.div
+        className="bg-white rounded-lg overflow-hidden group"
         variants={cardVariant}
         initial="hidden"
         whileInView="show"
         viewport={{ once: true, amount: 0.3 }}
         whileHover="hover"
       >
-        {/* Image Section */}
-        <div className="relative h-48">
-          <img
-            src={car.images?.[0] || "/placeholder.svg?height=200&width=300&query=car"}
-            alt={car.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          />
+        <div className="flex">
+          {/* Image Section */}
+          <div className="relative w-64 h-48 flex-shrink-0">
+            <img
+              src={car.images?.[0] || "/placeholder.svg?height=200&width=300&query=car"}
+              alt={car.title}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            />
 
-          {/* Status Badge */}
-          <div className="absolute top-4 left-4">
-            <span
-              className={`px-3 py-1 rounded-full text-sm font-medium ${
-                (car.status || "AVAILABLE") === "AVAILABLE" || (car.status || "ACTIVE") === "ACTIVE"
-                  ? "bg-green-100 text-green-800"
-                  : "bg-red-100 text-red-800"
-              }`}
-            >
-              {car.status || "AVAILABLE"}
-            </span>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="absolute top-4 right-4 flex gap-2">
-            <Button
-              size="sm"
-              variant="ghost"
-              className="bg-white/80 hover:bg-white text-gray-700 hover:text-red-600"
-              onClick={handleFavorite}
-            >
-              <Heart className={`w-4 h-4 ${isFavorite ? "fill-red-600 text-red-600" : ""}`} />
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="bg-white/80 hover:bg-white text-gray-700 hover:text-red-600"
-              onClick={handleShare}
-            >
-              <Share2 className="w-4 h-4" />
-            </Button>
-          </div>
-
-          {/* Image Count Badge */}
-          {car.images && car.images.length > 1 && (
-            <div className="absolute bottom-4 right-4 bg-black/50 text-white px-2 py-1 rounded text-sm">
-              {car.images.length} photos
+            {/* Status Badge */}
+            <div className="absolute top-4 left-4">
+              <span
+                className={`px-3 py-1 rounded-full text-sm font-medium ${
+                  (car.status || "AVAILABLE") === "AVAILABLE" || (car.status || "ACTIVE") === "ACTIVE"
+                    ? "bg-green-100 text-green-800"
+                    : "bg-red-100 text-red-800"
+                }`}
+              >
+                {car.status || "AVAILABLE"}
+              </span>
             </div>
-          )}
-        </div>
 
-        {/* Content Section */}
-        <div className="p-4">
-          {/* Price */}
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-red-600 font-bold text-lg">
-              {formatPrice(car.price, car.currency)}
-            </p>
-          </div>
-
-          {/* Title */}
-          <h3 className="font-semibold text-gray-800 mb-2 line-clamp-2">
-            {car.title}
-          </h3>
-
-          {/* Car Details */}
-          {car.category === "MOTORS" && car.features && (
-            <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
-              {car.features.year && (
-                <span className="flex items-center gap-1">
-                  <span>📅</span>
-                  {car.features.year}
-                </span>
-              )}
-              {(car.features.kilometers || car.features.mileage) && (
-                <span className="flex items-center gap-1">
-                  <span>🛣️</span>
-                  {(car.features.kilometers || car.features.mileage)?.toLocaleString()} km
-                </span>
-              )}
-              {(car.features.transmissionType || car.features.transmission) && (
-                <span className="flex items-center gap-1">
-                  <span>⚙️</span>
-                  {car.features.transmissionType || car.features.transmission}
-                </span>
-              )}
+            {/* Action Buttons */}
+            <div className="absolute top-4 right-4 flex gap-2">
+              <Button
+                size="sm"
+                variant="ghost"
+                className="bg-white/80 hover:bg-white text-gray-700 hover:text-red-600"
+                onClick={handleFavorite}
+              >
+                <Heart className={`w-4 h-4 ${isFavorite ? "fill-red-600 text-red-600" : ""}`} />
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="bg-white/80 hover:bg-white text-gray-700 hover:text-red-600"
+                onClick={handleShare}
+              >
+                <Share2 className="w-4 h-4" />
+              </Button>
             </div>
-          )}
 
-          {/* Location */}
-          <p className="text-gray-500 text-sm">
-            {formatLocation(car.location)}
-          </p>
-
-          {/* Additional Info */}
-          <div className="mt-2 flex items-center justify-between text-xs text-gray-400">
-            <span>Posted {new Date(car.createdAt).toLocaleDateString()}</span>
-            {car.condition && (
-              <span className="capitalize">{car.condition}</span>
+            {/* Image Count Badge */}
+            {car.images && car.images.length > 1 && (
+              <div className="absolute bottom-4 right-4 bg-black/50 text-white px-2 py-1 rounded text-sm">
+                {car.images.length} photos
+              </div>
             )}
+          </div>
+
+          {/* Content Section */}
+          <div className="flex-1 p-6">
+            {/* Price */}
+            <div className="mb-3">
+              <p className="text-red-600 font-bold text-2xl">
+                {formatPrice(car.price, car.currency)}
+              </p>
+            </div>
+
+            {/* Title and Details */}
+            <div className="mb-3">
+              <h3 className="font-semibold text-gray-800 text-lg mb-1">
+                {car.title}
+              </h3>
+              <p className="text-gray-600 text-sm">
+                {car.features?.make || car.features?.brand} • {car.features?.model} • {car.features?.year} • {car.condition?.toUpperCase()}
+              </p>
+            </div>
+
+            {/* Car Specifications */}
+            {car.category === "MOTORS" && car.features && (
+              <div className="flex items-center gap-6 text-sm text-gray-600 mb-3">
+                {car.features.year && (
+                  <span>{car.features.year}</span>
+                )}
+                {(car.features.kilometers || car.features.mileage) && (
+                  <span>{(car.features.kilometers || car.features.mileage)?.toLocaleString()} KM</span>
+                )}
+                <span>LEFT HAND</span>
+              </div>
+            )}
+
+            {/* Location */}
+            <div className="mb-3">
+              <p className="text-gray-700 font-medium">
+                {formatLocation(car.location)}
+              </p>
+            </div>
+
+            {/* Seller Information */}
+            <div className="text-sm text-gray-600">
+              <p>Listed by {car.seller?.name || 'SELLER NAME'}</p>
+              <p className="text-blue-600 font-medium">{car.seller?.phone || '078 123 456'}</p>
+            </div>
           </div>
         </div>
       </motion.div>
