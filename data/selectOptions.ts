@@ -75,7 +75,21 @@ export const selectOptions = {
         { value: "subaru-forester", label: "Subaru Forester" },
         { value: "subaru-outback", label: "Subaru Outback" },
       ],
-
+      makes: [
+        { value: "toyota", label: "Toyota" },
+        { value: "honda", label: "Honda" },
+        { value: "nissan", label: "Nissan" },
+        { value: "bmw", label: "BMW" },
+        { value: "mercedes", label: "Mercedes-Benz" },
+        { value: "audi", label: "Audi" },
+        { value: "ford", label: "Ford" },
+        { value: "chevrolet", label: "Chevrolet" },
+        { value: "hyundai", label: "Hyundai" },
+        { value: "kia", label: "Kia" },
+        { value: "mazda", label: "Mazda" },
+        { value: "volkswagen", label: "Volkswagen" },
+        { value: "subaru", label: "Subaru" },
+      ],
     years: [
       { value: "2024", label: "2024" },
       { value: "2023", label: "2023" },
