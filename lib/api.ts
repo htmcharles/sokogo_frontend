@@ -312,6 +312,8 @@ class ApiClient {
       address: string
     }
     images?: string[]
+    // New: optional files to trigger multipart GridFS flow
+    imagesFiles?: File[]
     features?: {
       // For motors
       brand?: string
@@ -346,17 +348,46 @@ class ApiClient {
       throw new Error("User must be logged in to create items")
     }
 
-    // Always include seller information in the request
+    // Local-first flow: images should already be paths in itemData.images
+
+    // Legacy JSON flow (no images uploaded here)
     const enrichedItemData = {
       ...itemData,
-      seller: this.userId, // Explicitly include seller ID
-      sellerId: this.userId, // Alternative field name for backend compatibility
+      seller: this.userId,
+      sellerId: this.userId,
+      // Merge any existing images with newly uploaded ones
+      images: [ ...((itemData.images || []) as string[]) ],
     }
 
     return this.request<{ message: string; item: Item }>("/items", {
       method: "POST",
       body: JSON.stringify(enrichedItemData),
     })
+  }
+
+  // Removed remote upload (Cloudinary/remote) in favor of local upload
+
+  // Upload images to local Next.js API to save under public/uploads
+  async uploadImagesLocally(files: File[]): Promise<{ message?: string; imagePaths: string[] }> {
+    if (!files || files.length === 0) {
+      return { imagePaths: [] }
+    }
+
+    const formData = new FormData()
+    files.forEach((file) => formData.append("images", file))
+
+    const url = "/api/uploads"
+    const response = await fetch(url, {
+      method: "POST",
+      body: formData,
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ message: `HTTP error! status: ${response.status}` }))
+      throw new Error(errorData.message || `HTTP error! status ${response.status}`)
+    }
+
+    return response.json()
   }
 
   async getMyItems(): Promise<{ items: Item[] }> {
@@ -543,58 +574,7 @@ class ApiClient {
     return this.userId!
   }
 
-  // Upload multiple product photos using multipart/form-data
-  async uploadProductPhotos(productId: string, files: File[]): Promise<{ message: string; imageUrls?: string[] }> {
-    if (!productId) {
-      throw new Error("Missing product id for photo upload")
-    }
-
-    if (!files || files.length === 0) {
-      throw new Error("No files selected for upload")
-    }
-
-    // Get authenticated user ID (this will throw if not authenticated)
-    const sellerId = this.getAuthenticatedUserId()
-
-    const formData = new FormData()
-
-    // Always include seller userId in FormData for backend verification
-    formData.append("seller", sellerId)
-
-    // Append all photos
-    files.forEach((file, index) => {
-      formData.append(`photos`, file) // Use same key for multiple files
-    })
-
-    const url = `${this.baseUrl}/products/${productId}/photos`
-
-    const headers: Record<string, string> = {}
-    headers["userid"] = sellerId
-    headers["x-seller-id"] = sellerId // Additional header for extra security
-
-    const response = await fetch(url, {
-      method: "POST",
-      body: formData,
-      headers, // Do NOT set Content-Type; the browser will set correct boundary
-      mode: "cors",
-      credentials: "include", // Include cookies/credentials to maintain login
-    })
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ message: `HTTP error! status: ${response.status}` }))
-      throw new Error(errorData.message || `Upload failed with status ${response.status}`)
-    }
-
-    return response.json()
-  }
-
-  // Upload a single product photo (legacy method)
-  async uploadProductPhoto(productId: string, file: File): Promise<{ message: string; imageUrl?: string }> {
-    return this.uploadProductPhotos(productId, [file]).then(result => ({
-      message: result.message,
-      imageUrl: result.imageUrls?.[0]
-    }))
-  }
+  // Removed product photos upload (legacy remote path)
 
         // Google OAuth login for existing users
   async loginWithGoogleOAuth(email: string, googleId: string): Promise<LoginResponse> {
