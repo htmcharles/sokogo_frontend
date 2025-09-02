@@ -1,5 +1,5 @@
 // API configuration and utility functions for SOKOGO backend
-const API_BASE_URL = "http://localhost:8000/api"
+const API_BASE_URL = "https://sokogo-backend-a390.onrender.com/api"
 
 // API response types
 export interface User {
