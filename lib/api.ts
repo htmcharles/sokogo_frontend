@@ -323,7 +323,8 @@ class ApiClient {
         make: make ? make.charAt(0).toUpperCase() + make.slice(1) : undefined,
         model: model ? model.toUpperCase() : undefined,
         year: listingData.year ? parseInt(listingData.year) : undefined,
-        kilometers: this.parseKilometers(listingData.kilometers || ""),
+        // Accept either a labeled range (e.g., "10000-50000") or a numeric string (e.g., "45000")
+        kilometers: this.parseKilometersFlexible(listingData.kilometers),
         bodyType: listingData.bodyType ? listingData.bodyType.toUpperCase() : undefined,
         isInsuredInRwanda: listingData.insured || undefined,
         technicalControl: this.normalizeYesNo(listingData.technicalControl || ""),
@@ -335,7 +336,8 @@ class ApiClient {
         steeringSide: listingData.steeringSide ? (listingData.steeringSide === "left" ? "Left" : "Right") : undefined,
         fuelType: listingData.fuelType ? listingData.fuelType.charAt(0).toUpperCase() + listingData.fuelType.slice(1) : undefined,
         seatingCapacity: this.toNumber(listingData.seatingCapacity),
-        horsePower: this.toNumber(listingData.horsePower),
+        // Convert range labels like "100-200" or "300+" into representative numbers
+        horsePower: this.parseHorsePowerFlexible(listingData.horsePower),
         frontAirbags: listingData.technicalFeatures?.frontAirbags || undefined,
         sideAirbags: listingData.technicalFeatures?.sideAirbags || undefined,
         powerSteering: listingData.technicalFeatures?.powerSteering || undefined,
@@ -467,6 +469,55 @@ class ApiClient {
       default:
         return undefined
     }
+  }
+
+  // Accepts either predefined buckets (e.g., "0-10000") or raw numeric strings (e.g., "45000")
+  private parseKilometersFlexible(input: unknown): number | undefined {
+    if (typeof input === "number" && Number.isFinite(input)) {
+      return input
+    }
+    if (typeof input === "string") {
+      const trimmed = input.trim()
+      // If looks like a bucket, reuse existing logic
+      if (/^\d+\-\d+$/.test(trimmed) || /\+$/.test(trimmed)) {
+        return this.parseKilometers(trimmed)
+      }
+      // Otherwise try to parse a plain number
+      const cleaned = trimmed.replace(/[^0-9]/g, "")
+      if (cleaned) {
+        const parsed = parseInt(cleaned)
+        return Number.isFinite(parsed) ? parsed : undefined
+      }
+    }
+    return undefined
+  }
+
+  // Parse horsepower from either numeric strings or range buckets (e.g., "100-200", "300+")
+  private parseHorsePowerFlexible(input: unknown): number | undefined {
+    if (typeof input === "number" && Number.isFinite(input)) {
+      return input
+    }
+    if (typeof input === "string") {
+      const trimmed = input.trim().toLowerCase()
+      // Direct numeric value
+      const direct = trimmed.replace(/[^0-9]/g, "")
+      if (direct && /^\d+$/.test(direct) && !trimmed.includes("-")) {
+        const parsed = parseInt(direct)
+        return Number.isFinite(parsed) ? parsed : undefined
+      }
+      // Ranges
+      if (/^\d+\-\d+$/.test(trimmed)) {
+        const [low, high] = trimmed.split("-").map((v) => parseInt(v))
+        if (Number.isFinite(low) && Number.isFinite(high)) {
+          return Math.round((low + high) / 2)
+        }
+      }
+      if (/^\d+\+$/.test(trimmed)) {
+        const base = parseInt(trimmed)
+        return Number.isFinite(base) ? base : undefined
+      }
+    }
+    return undefined
   }
 
   private normalizeYesNo(value: string): string | undefined {
