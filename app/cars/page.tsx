@@ -63,10 +63,10 @@ function CarDetailsForm() {
           <ChevronRight className="w-4 h-4" />
           <span className="font-medium">CARS</span>
         </div>
-        <Link href="/category">
+        <Link href="/seller">
           <Button variant="outline" size="sm" className="flex items-center gap-2 bg-transparent">
             <ArrowLeft className="w-4 h-4" />
-            Back
+            Back to Seller
           </Button>
         </Link>
       </div>
