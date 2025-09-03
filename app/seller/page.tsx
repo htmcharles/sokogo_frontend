@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { SiteHeader } from "@/components/SiteHeader"
-import { Plus, Package, TrendingUp, DollarSign, LogOut, Edit, Trash2, AlertCircle, RefreshCw } from "lucide-react"
+import { Plus, Package, TrendingUp, DollarSign, LogOut, Trash2, AlertCircle, RefreshCw } from "lucide-react"
 import { apiClient, type Item } from "@/lib/api"
 
 export default function SellerDashboard() {
@@ -197,15 +197,7 @@ export default function SellerDashboard() {
                       <span className="text-lg font-bold text-green-600">{product.currency} {product.price.toLocaleString()}</span>
                       <span className="text-sm text-gray-500">{product.category}</span>
                     </div>
-                                        <div className="flex space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex-1 text-gray-600 hover:text-gray-700 hover:bg-gray-50"
-                        onClick={() => alert("Edit functionality coming soon!")}
-                      >
-                        <Edit className="w-4 h-4 mr-1" /> Edit
-                      </Button>
+                    <div className="flex space-x-2">
                       <Button
                         variant="outline"
                         size="sm"
