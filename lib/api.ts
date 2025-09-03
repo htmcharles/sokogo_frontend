@@ -495,15 +495,27 @@ class ApiClient {
     try {
       const uploadedUrls: string[] = []
 
-      // Upload each file to Vercel Blob
+      // Upload each file to Vercel Blob with 409 retry using a unique filename
       for (const file of files) {
         const formData = new FormData()
         formData.append("file", file)
 
-        const response = await fetch(`/api/upload-file?filename=${encodeURIComponent(file.name)}`, {
-          method: "POST",
-          body: formData,
-        })
+        const tryUpload = async (name: string) => {
+          const resp = await fetch(`/api/upload-file?filename=${encodeURIComponent(name)}`, {
+            method: "POST",
+            body: formData,
+          })
+          return resp
+        }
+
+        // First attempt with the original filename
+        let response = await tryUpload(file.name)
+
+        // If conflict, retry once with a unique filename
+        if (response.status === 409) {
+          const uniqueName = `${Date.now()}_${Math.random().toString(36).slice(2)}_${file.name}`
+          response = await tryUpload(uniqueName)
+        }
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({ message: `HTTP error! status: ${response.status}` }))
