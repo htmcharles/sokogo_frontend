@@ -6,7 +6,13 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { ChevronRight, Home, ArrowLeft } from "lucide-react"
 import { selectOptions } from "@/data/selectOptions"
 
@@ -26,18 +32,34 @@ function CarDetailsForm() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    sessionStorage.setItem("carDetailsForm", JSON.stringify(formData))
+
+    // Convert where necessary
+    const formattedData = {
+      ...formData,
+      kilometers: formData.kilometers ? Number(formData.kilometers) : 0,
+      price: formData.price ? Number(formData.price) : 0,
+      phoneNumber: formData.phoneNumber.trim(),
+    }
+
+    sessionStorage.setItem("carDetailsForm", JSON.stringify(formattedData))
     router.push("/cars/listing")
   }
 
-  const renderSelect = (value: string, onChange: (val: string) => void, placeholder: string, options: { value: string, label: string }[]) => (
+  const renderSelect = (
+    value: string,
+    onChange: (val: string) => void,
+    placeholder: string,
+    options: { value: string; label: string }[]
+  ) => (
     <Select value={value} onValueChange={onChange}>
       <SelectTrigger className="w-full h-12 rounded-full border-gray-300">
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>
-        {options.map(opt => (
-          <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+        {options.map((opt) => (
+          <SelectItem key={opt.value} value={opt.value}>
+            {opt.label}
+          </SelectItem>
         ))}
       </SelectContent>
     </Select>
@@ -54,7 +76,9 @@ function CarDetailsForm() {
       </div>
 
       <div className="text-center mb-8">
-        <h2 className="text-2xl font-semibold text-gray-700 text-balance">Tell us more about your car</h2>
+        <h2 className="text-2xl font-semibold text-gray-700 text-balance">
+          Tell us more about your car
+        </h2>
       </div>
 
       <div className="flex items-center justify-between mb-8">
@@ -65,7 +89,11 @@ function CarDetailsForm() {
           <span className="font-medium">CARS</span>
         </div>
         <Link href="/seller">
-          <Button variant="outline" size="sm" className="flex items-center gap-2 bg-transparent">
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2 bg-transparent"
+          >
             <ArrowLeft className="w-4 h-4" />
             Back to Seller
           </Button>
@@ -73,25 +101,59 @@ function CarDetailsForm() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {renderSelect(formData.location, val => setFormData({ ...formData, location: val }), "NYARUGENGE", selectOptions.locations)}
-        {renderSelect(formData.makeModel, val => setFormData({ ...formData, makeModel: val }), "MAKE & MODEL*", selectOptions.makeModels)}
-        {renderSelect(formData.year, val => setFormData({ ...formData, year: val }), "YEAR*", selectOptions.years)}
+        {renderSelect(
+          formData.location,
+          (val) => setFormData({ ...formData, location: val }),
+          "NYARUGENGE",
+          selectOptions.locations
+        )}
+        {renderSelect(
+          formData.makeModel,
+          (val) => setFormData({ ...formData, makeModel: val }),
+          "MAKE & MODEL*",
+          selectOptions.makeModels
+        )}
+        {renderSelect(
+          formData.year,
+          (val) => setFormData({ ...formData, year: val }),
+          "YEAR*",
+          selectOptions.years
+        )}
         <Input
           type="number"
           value={formData.kilometers}
-          onChange={(e) => setFormData({ ...formData, kilometers: e.target.value })}
+          onChange={(e) =>
+            setFormData({ ...formData, kilometers: e.target.value })
+          }
           placeholder="KILOMETERS*"
           className="w-full h-12 rounded-full"
           min={0}
           inputMode="numeric"
         />
-        {renderSelect(formData.bodyType, val => setFormData({ ...formData, bodyType: val }), "BODY TYPE*", selectOptions.bodyTypes)}
-        {renderSelect(formData.insured, val => setFormData({ ...formData, insured: val }), "IS YOUR CAR INSURED IN RWANDA?*", selectOptions.insuredOptions)}
-        {renderSelect(formData.technicalControl, val => setFormData({ ...formData, technicalControl: val }), "TECHNICAL CONTROL*", selectOptions.technicalControls)}
+        {renderSelect(
+          formData.bodyType,
+          (val) => setFormData({ ...formData, bodyType: val }),
+          "BODY TYPE*",
+          selectOptions.bodyTypes
+        )}
+        {renderSelect(
+          formData.insured,
+          (val) => setFormData({ ...formData, insured: val }),
+          "IS YOUR CAR INSURED IN RWANDA?*",
+          selectOptions.insuredOptions
+        )}
+        {renderSelect(
+          formData.technicalControl,
+          (val) => setFormData({ ...formData, technicalControl: val }),
+          "TECHNICAL CONTROL*",
+          selectOptions.technicalControls
+        )}
         <Input
           type="number"
           value={formData.price}
-          onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+          onChange={(e) =>
+            setFormData({ ...formData, price: e.target.value })
+          }
           placeholder="PRICE*"
           className="w-full h-12 rounded-full"
           min={0}
@@ -99,16 +161,21 @@ function CarDetailsForm() {
           inputMode="numeric"
         />
         <Input
-          type="number"
+          type="tel"
           value={formData.phoneNumber}
-          onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+          onChange={(e) =>
+            setFormData({ ...formData, phoneNumber: e.target.value })
+          }
           placeholder="PHONE NUMBER*"
           className="w-full h-12 rounded-full"
           inputMode="numeric"
         />
 
         <div className="pt-6">
-          <Button type="submit" className="w-full h-12 bg-red-600 hover:bg-red-700 text-white rounded-full font-medium">
+          <Button
+            type="submit"
+            className="w-full h-12 bg-red-600 hover:bg-red-700 text-white rounded-full font-medium"
+          >
             Continue
           </Button>
         </div>
