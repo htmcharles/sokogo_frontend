@@ -17,6 +17,7 @@ import {
   Twitter,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { motion } from "framer-motion"
@@ -37,10 +38,21 @@ export default function Home() {
   const [newsletterEmail, setNewsletterEmail] = useState("")
   const [carsData, setCarsData] = useState<Item[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [showRegisterPrompt, setShowRegisterPrompt] = useState(false)
   const router = useRouter()
   const { isAuthenticated, user } = useAuth()
 
   useEffect(() => {
+    // First-visit register prompt
+    try {
+      const hasSeenPrompt = localStorage.getItem("hasSeenRegisterPrompt")
+      if (!hasSeenPrompt) {
+        setShowRegisterPrompt(true)
+      }
+    } catch (e) {
+      // ignore storage errors
+    }
+
     const fetchData = async () => {
       try {
         setIsLoading(true)
@@ -99,6 +111,42 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white">
+      <Dialog open={showRegisterPrompt} onOpenChange={(open) => {
+        setShowRegisterPrompt(open)
+        if (!open) {
+          try { localStorage.setItem("hasSeenRegisterPrompt", "true") } catch {}
+        }
+      }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create your account?</DialogTitle>
+            <DialogDescription>
+              Join SOKOGO to post listings, save favorites, and message sellers.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                try { localStorage.setItem("hasSeenRegisterPrompt", "true") } catch {}
+                setShowRegisterPrompt(false)
+              }}
+            >
+              Maybe later
+            </Button>
+            <Button
+              className="bg-red-600 hover:bg-red-700 text-white"
+              onClick={() => {
+                try { localStorage.setItem("hasSeenRegisterPrompt", "true") } catch {}
+                router.push("/register")
+              }}
+            >
+              Register
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Header */}
       <header className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
