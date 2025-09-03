@@ -26,6 +26,7 @@ import { textVariant, fadeIn, staggerContainer, slideIn } from "@/lib/animations
 import Link from "next/link"
 import { useAuth } from "@/contexts/AuthContext"
 import CarCard from "@/components/CarCard"
+import { SiteHeader } from "@/components/SiteHeader"
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -152,74 +153,7 @@ export default function Home() {
         </DialogContent>
       </Dialog>
 
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <div className="flex items-center">
-              <h1 className="text-2xl font-bold">
-                <span className="text-gray-800">SOKO</span>
-                <span className="text-red-600">GO</span>
-              </h1>
-            </div>
-
-            {/* Navigation */}
-            <nav className="hidden md:flex items-center space-x-8">
-              <Link href="/" className="text-gray-700 hover:text-gray-900">
-                HOME
-              </Link>
-              {isAuthenticated ? (
-                <>
-                  {user?.role === 'admin' ? (
-                    <Link href="/admin" className="text-gray-700 hover:text-gray-900">
-                      ADMIN PANEL
-                    </Link>
-                  ) : user?.role === 'seller' ? (
-                    <Link href="/seller" className="text-gray-700 hover:text-gray-900">
-                      SELLER PANEL
-                    </Link>
-                  ) : (
-                    <Link href="/dashboard" className="text-gray-700 hover:text-gray-900">
-                      DASHBOARD
-                    </Link>
-                  )}
-                  <span className="text-gray-700">Welcome, {user?.firstName}</span>
-                </>
-              ) : (
-                <>
-                  <Link href="/login" className="text-gray-700 hover:text-gray-900">
-                    LOG IN
-                  </Link>
-                  <Link href="/register" className="text-gray-700 hover:text-gray-900">
-                    REGISTER
-                  </Link>
-                </>
-              )}
-            </nav>
-
-            {/* CTA Button */}
-            <Button
-              onClick={() => {
-                if (isAuthenticated) {
-                  if (user?.role === 'admin') {
-                    router.push('/admin')
-                  } else if (user?.role === 'seller') {
-                    router.push('/seller')
-                  } else {
-                    router.push('/dashboard')
-                  }
-                } else {
-                  router.push('/login')
-                }
-              }}
-              className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-full"
-            >
-              PLACE YOUR AD
-            </Button>
-          </div>
-        </div>
-      </header>
+      <SiteHeader />
 
       {/* Hero Section */}
       <div

@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import Link from "next/link"
+import { SiteHeader } from "@/components/SiteHeader"
 import { useState, useEffect } from "react"
 import { apiClient, type Item } from "@/lib/api"
 import Image from "next/image"
@@ -61,37 +62,7 @@ export default function CarsPage() {
   return (
     <ProtectedRoute>
       <div className="min-h-screen bg-gray-50">
-        {/* Header */}
-        <header className="bg-white border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16">
-              <Link href="/" className="text-2xl font-bold">
-                <span className="text-gray-800">SOKO</span>
-                <span className="text-red-600">GO</span>
-              </Link>
-
-              <nav className="hidden md:flex items-center space-x-8">
-                <Link href="/dashboard" className="text-gray-600 hover:text-red-600 flex items-center">
-                  <span className="mr-2">📊</span> Dashboard
-                </Link>
-                <Link href="/dashboard/cars" className="text-red-600 font-medium flex items-center">
-                  <span className="mr-2">🚗</span> Cars
-                </Link>
-                <Link href="/dashboard/profile" className="text-gray-600 hover:text-red-600 flex items-center">
-                  <span className="mr-2">👤</span> Profile
-                </Link>
-              </nav>
-
-              <Button
-                onClick={handleLogout}
-                variant="outline"
-                className="border-red-600 text-red-600 hover:bg-red-600 hover:text-white bg-transparent"
-              >
-                Logout
-              </Button>
-            </div>
-          </div>
-        </header>
+        <SiteHeader />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="mb-8">
