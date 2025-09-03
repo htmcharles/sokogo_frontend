@@ -63,9 +63,9 @@ export default function CarCard({ car, className = "" }: CarCardProps) {
         viewport={{ once: true, amount: 0.3 }}
         whileHover="hover"
       >
-        <div className="flex">
+        <div className="flex flex-col sm:flex-row">
           {/* Image Section */}
-          <div className="relative w-64 h-48 flex-shrink-0">
+          <div className="relative w-full h-48 sm:w-64 sm:h-48 flex-shrink-0">
             <img
               src={car.images?.[0] || "/placeholder.svg?height=200&width=300&query=car"}
               alt={car.title}
@@ -114,7 +114,7 @@ export default function CarCard({ car, className = "" }: CarCardProps) {
           </div>
 
           {/* Content Section */}
-          <div className="flex-1 p-6">
+          <div className="flex-1 p-6 min-w-0">
             {/* Price */}
             <div className="mb-3">
               <p className="text-red-600 font-bold text-2xl">
@@ -124,7 +124,7 @@ export default function CarCard({ car, className = "" }: CarCardProps) {
 
             {/* Title and Details */}
             <div className="mb-3">
-              <h3 className="font-semibold text-gray-800 text-lg mb-1">
+              <h3 className="font-semibold text-gray-800 text-lg mb-1 line-clamp-2">
                 {car.title}
               </h3>
               <p className="text-gray-600 text-sm">
@@ -134,7 +134,7 @@ export default function CarCard({ car, className = "" }: CarCardProps) {
 
             {/* Car Specifications */}
             {car.category === "MOTORS" && car.features && (
-              <div className="flex items-center gap-6 text-sm text-gray-600 mb-3">
+              <div className="flex flex-wrap items-center gap-6 text-sm text-gray-600 mb-3">
                 {car.features.year && (
                   <span>{car.features.year}</span>
                 )}
@@ -154,8 +154,12 @@ export default function CarCard({ car, className = "" }: CarCardProps) {
 
             {/* Seller Information */}
             <div className="text-sm text-gray-600">
-              <p>Listed by {car.seller?.name || 'SELLER NAME'}</p>
-              <p className="text-blue-600 font-medium">{car.seller?.phone || '078 123 456'}</p>
+              <p>
+                Listed by {typeof car.seller === 'object' ? `${(car.seller as any).firstName || ''} ${(car.seller as any).lastName || ''}`.trim() || 'SELLER NAME' : 'SELLER NAME'}
+              </p>
+              <p className="text-blue-600 font-medium">
+                {typeof car.seller === 'object' && (car.seller as any)?.phoneNumber ? (car.seller as any).phoneNumber : '078 123 456'}
+              </p>
             </div>
           </div>
         </div>

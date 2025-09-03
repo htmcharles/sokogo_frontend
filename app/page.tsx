@@ -199,7 +199,7 @@ export default function Home() {
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex flex-col justify-center">
           <motion.div
             className="text-white mb-8"
-            variants={textVariant(0.2)}
+            variants={textVariant(0.2) as any}
             initial="hidden"
             whileInView="show"
             viewport={{ once: true }}
@@ -223,8 +223,8 @@ export default function Home() {
           {/* Search Bar */}
           <motion.form
             onSubmit={handleSearch}
-            className="flex gap-4 max-w-2xl"
-            variants={fadeIn("up", "tween", 0.4, 0.6)}
+            className="flex flex-col sm:flex-row gap-4 max-w-2xl"
+            variants={fadeIn("up", "tween", 0.4, 0.6) as any}
             initial="hidden"
             whileInView="show"
             viewport={{ once: true }}
@@ -239,7 +239,7 @@ export default function Home() {
               />
               <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500" />
             </div>
-            <Button type="submit" className="bg-red-600 hover:bg-red-700 text-white px-8 h-14 rounded-full shadow-lg font-semibold">
+            <Button type="submit" className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white px-8 h-14 rounded-full shadow-lg font-semibold">
               Search
             </Button>
           </motion.form>
@@ -250,7 +250,7 @@ export default function Home() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <motion.h2
           className="text-2xl font-bold text-gray-800 mb-8"
-          variants={textVariant(0.2)}
+          variants={textVariant(0.2) as any}
           initial="hidden"
           whileInView="show"
           viewport={{ once: true }}
@@ -303,14 +303,14 @@ export default function Home() {
 
           <motion.div
             className="grid grid-cols-1 md:grid-cols-3 gap-8"
-            variants={staggerContainer(0.2, 0.1)}
+            variants={staggerContainer(0.2, 0.1) as any}
             initial="hidden"
             whileInView="show"
             viewport={{ once: true, amount: 0.1 }}
           >
             <motion.div
               className="text-center"
-              variants={fadeIn("up", "tween", 0.2, 0.6)}
+              variants={fadeIn("up", "tween", 0.2, 0.6) as any}
             >
               <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <CheckCircle className="h-8 w-8 text-red-600" />
@@ -323,7 +323,7 @@ export default function Home() {
 
             <motion.div
               className="text-center"
-              variants={fadeIn("up", "tween", 0.4, 0.6)}
+              variants={fadeIn("up", "tween", 0.4, 0.6) as any}
             >
               <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <CheckCircle className="h-8 w-8 text-red-600" />
@@ -336,7 +336,7 @@ export default function Home() {
 
             <motion.div
               className="text-center"
-              variants={fadeIn("up", "tween", 0.6, 0.6)}
+              variants={fadeIn("up", "tween", 0.6, 0.6) as any}
             >
               <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <CheckCircle className="h-8 w-8 text-red-600" />

@@ -106,7 +106,7 @@ export default function SearchPage() {
 
           <motion.form
             onSubmit={handleSearch}
-            className="flex gap-4 max-w-2xl"
+            className="flex flex-col sm:flex-row gap-4 max-w-2xl"
             variants={fadeIn("up", "tween", 0.4, 0.6)}
             initial="hidden"
             whileInView="show"
@@ -124,7 +124,7 @@ export default function SearchPage() {
             </div>
             <Button
               type="submit"
-              className="bg-red-600 hover:bg-red-700 text-white px-8 h-14 rounded-full shadow-lg font-semibold"
+              className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white px-8 h-14 rounded-full shadow-lg font-semibold"
             >
               Search
             </Button>
@@ -173,7 +173,7 @@ export default function SearchPage() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex gap-8">
+        <div className="flex flex-col lg:flex-row gap-8">
           {/* Car Listings */}
           <div className="flex-1">
             <motion.div

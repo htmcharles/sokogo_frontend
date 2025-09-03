@@ -50,7 +50,6 @@ export const zoomIn = (delay: number, duration: number) => {
         type: "tween" as const,
         delay: delay,
         duration: duration,
-        ease: "easeOut",
       },
     },
   };
@@ -69,7 +68,6 @@ export const slideIn = (direction: string, type: string, delay: number, duration
         type: type as any,
         delay: delay,
         duration: duration,
-        ease: "easeOut",
       },
     },
   };
