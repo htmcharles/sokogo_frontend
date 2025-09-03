@@ -113,10 +113,6 @@ export default function Home() {
 
             {/* Navigation */}
             <nav className="hidden md:flex items-center space-x-8">
-              <button className="flex items-center text-gray-700 hover:text-gray-900">
-                ALL DISTRICTS
-                <ChevronDown className="ml-1 h-4 w-4" />
-              </button>
               <Link href="/" className="text-gray-700 hover:text-gray-900">
                 HOME
               </Link>
@@ -172,22 +168,6 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Category Navigation */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-center space-x-16 h-16">
-            <button
-              onClick={() => setActiveCategory("motors")}
-              className={`px-6 py-2 rounded-full font-medium ${
-                activeCategory === "motors" ? "bg-red-600 text-white" : "text-gray-800 hover:text-red-600"
-              }`}
-            >
-              MOTORS
-            </button>
-          </div>
-        </div>
-      </div>
-
       {/* Hero Section */}
       <div
         className="relative h-96 bg-cover bg-center"
@@ -205,19 +185,8 @@ export default function Home() {
             viewport={{ once: true }}
           >
             <h1 className="text-4xl font-bold mb-4">Find Your Perfect Car</h1>
-            <p className="text-xl mb-4">Searching in</p>
+            <p className="text-xl mb-4">Searching </p>
 
-            {/* Category Tabs */}
-            <div className="flex space-x-4 mb-6">
-              <button
-                onClick={() => setActiveCategory("motors")}
-                className={`px-6 py-2 rounded-full font-medium ${
-                  activeCategory === "motors" ? "bg-red-600 text-white" : "text-white hover:text-gray-200"
-                }`}
-              >
-                MOTORS
-              </button>
-            </div>
           </motion.div>
 
           {/* Search Bar */}
