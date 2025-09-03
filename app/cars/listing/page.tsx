@@ -13,6 +13,7 @@ import { useState, useEffect } from "react"
 import { apiClient } from "@/lib/api"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
+import { selectOptions } from "@/data/selectOptions"
 
 function FinalListingForm() {
   const router = useRouter()
@@ -499,11 +500,9 @@ function FinalListingForm() {
                   <SelectValue placeholder="EXTERIOR COLOR*" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="white">White</SelectItem>
-                  <SelectItem value="black">Black</SelectItem>
-                  <SelectItem value="silver">Silver</SelectItem>
-                  <SelectItem value="red">Red</SelectItem>
-                  <SelectItem value="blue">Blue</SelectItem>
+                  {selectOptions.exteriorColors.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
 
@@ -530,10 +529,9 @@ function FinalListingForm() {
                   <SelectValue placeholder="INTERIOR COLOR*" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="black">Black</SelectItem>
-                  <SelectItem value="beige">Beige</SelectItem>
-                  <SelectItem value="gray">Gray</SelectItem>
-                  <SelectItem value="brown">Brown</SelectItem>
+                  {selectOptions.interiorColors.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
 
