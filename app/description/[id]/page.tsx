@@ -32,7 +32,7 @@ export default function DescriptionPage() {
           console.log("Setting item from response.item:", (response as any).item)
           const itemData = (response as any).item as Item
           setItem(itemData)
-          
+
           // Fetch seller details if seller is a string (user ID)
           if (typeof itemData.seller === "string") {
             try {
@@ -52,7 +52,7 @@ export default function DescriptionPage() {
           console.log("Setting item from response directly:", response)
           const itemData = response as Item
           setItem(itemData)
-          
+
           // Fetch seller details if seller is a string (user ID)
           if (typeof itemData.seller === "string") {
             try {
@@ -176,7 +176,7 @@ export default function DescriptionPage() {
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back
         </Button>
-         
+
 
       </div>
 
@@ -327,13 +327,13 @@ export default function DescriptionPage() {
                   ✉️ {seller.email}
                 </p>
               )}
-              
+
               {/* Seller Description */}
               {seller && (
                 <div className="mb-4 p-3 bg-gray-50 rounded-lg">
                   <h4 className="font-medium text-gray-900 mb-2">About the Seller</h4>
                   <p className="text-sm text-gray-600">
-                    {seller.firstName} {seller.lastName} is a verified {seller.role === "seller" ? "dealer" : seller.role} on SOKOGO. 
+                    {seller.firstName} {seller.lastName} is a verified {seller.role === "seller" ? "dealer" : seller.role} on SOKOGO.
                     {seller.role === "seller" ? " They specialize in quality vehicles and provide excellent customer service." : ""}
                   </p>
                   <div className="mt-3 flex items-center justify-between text-xs text-gray-500">
@@ -350,9 +350,9 @@ export default function DescriptionPage() {
                   </div>
                 </div>
               )}
-              
-              <Button 
-                variant="outline" 
+
+              <Button
+                variant="outline"
                 className="w-full"
                 onClick={() => {
                   if (seller) {
@@ -370,7 +370,7 @@ export default function DescriptionPage() {
             <div className="bg-white rounded-lg p-6">
               <h3 className="font-semibold text-gray-900 mb-4">Contact Seller</h3>
               <div className="flex gap-3">
-                <Button 
+                <Button
                   className="flex-1 bg-green-600 hover:bg-green-700"
                   onClick={() => seller?.phoneNumber && window.open(`tel:${seller.phoneNumber}`)}
                   disabled={!seller?.phoneNumber}
@@ -378,7 +378,7 @@ export default function DescriptionPage() {
                   <Phone className="w-4 h-4 mr-2" />
                   Call
                 </Button>
-                <Button 
+                <Button
                   className="flex-1 bg-green-500 hover:bg-green-600"
                   onClick={() => seller?.phoneNumber && window.open(`https://wa.me/${seller.phoneNumber.replace(/\D/g, '')}`)}
                   disabled={!seller?.phoneNumber}
@@ -386,7 +386,7 @@ export default function DescriptionPage() {
                   <span className="mr-2">💬</span>
                   WhatsApp
                 </Button>
-                <Button 
+                <Button
                   className="flex-1 bg-blue-600 hover:bg-blue-700"
                   onClick={() => seller?.email && window.open(`mailto:${seller.email}`)}
                   disabled={!seller?.email}
@@ -531,9 +531,6 @@ export default function DescriptionPage() {
                 <p className="text-gray-700">
                   Price: ({formatPrice(item.price, item.currency)}), (${(item.price / 1200).toLocaleString()})
                 </p>
-                <button className="text-red-600 hover:text-red-700 text-sm font-medium mt-2">
-                  Read More
-                </button>
               </div>
 
               <p className="text-sm text-gray-500">

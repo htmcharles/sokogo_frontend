@@ -1,7 +1,7 @@
 "use client"
 
 import { Card } from "@/components/ui/card"
-import { ChevronRight, Home } from "lucide-react"
+import { ArrowLeft, ChevronRight, Home } from "lucide-react"
 import Link from "next/link"
 
 function CategorySelection() {
@@ -13,6 +13,12 @@ function CategorySelection() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
+      <div className="mb-4">
+        <Link href="/seller" className="inline-flex items-center gap-1 text-red-600 hover:underline">
+          <ArrowLeft className="w-4 h-4" />
+          <span>Back to seller</span>
+        </Link>
+      </div>
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold text-gray-800">
           SOKO<span className="text-red-600">GO</span>
