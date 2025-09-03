@@ -43,11 +43,16 @@ export default function Home() {
   const { isAuthenticated, user } = useAuth()
 
   useEffect(() => {
-    // First-visit register prompt
+    // First-visit register prompt with cooldown (7 days)
     try {
-      const hasSeenPrompt = localStorage.getItem("hasSeenRegisterPrompt")
-      if (!hasSeenPrompt) {
-        setShowRegisterPrompt(true)
+      if (!isAuthenticated) {
+        const dismissedAt = localStorage.getItem("registerPromptDismissedAt")
+        const sevenDaysMs = 7 * 24 * 60 * 60 * 1000
+        const now = Date.now()
+        const shouldShow = !dismissedAt || (now - Number(dismissedAt)) > sevenDaysMs
+        if (shouldShow) {
+          setShowRegisterPrompt(true)
+        }
       }
     } catch (e) {
       // ignore storage errors
@@ -114,7 +119,7 @@ export default function Home() {
       <Dialog open={showRegisterPrompt} onOpenChange={(open) => {
         setShowRegisterPrompt(open)
         if (!open) {
-          try { localStorage.setItem("hasSeenRegisterPrompt", "true") } catch {}
+          try { localStorage.setItem("registerPromptDismissedAt", String(Date.now())) } catch {}
         }
       }}>
         <DialogContent>
@@ -128,7 +133,7 @@ export default function Home() {
             <Button
               variant="outline"
               onClick={() => {
-                try { localStorage.setItem("hasSeenRegisterPrompt", "true") } catch {}
+                try { localStorage.setItem("registerPromptDismissedAt", String(Date.now())) } catch {}
                 setShowRegisterPrompt(false)
               }}
             >
@@ -137,7 +142,7 @@ export default function Home() {
             <Button
               className="bg-red-600 hover:bg-red-700 text-white"
               onClick={() => {
-                try { localStorage.setItem("hasSeenRegisterPrompt", "true") } catch {}
+                try { localStorage.setItem("registerPromptDismissedAt", String(Date.now())) } catch {}
                 router.push("/register")
               }}
             >
@@ -224,23 +229,23 @@ export default function Home() {
         }}
       >
         <div className="absolute inset-0 bg-black/20"></div>
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex flex-col justify-center">
+        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex flex-col justify-center items-center">
           <motion.div
-            className="text-white mb-8"
+            className="text-white mb-8 text-center"
             variants={textVariant(0.2) as any}
             initial="hidden"
             whileInView="show"
             viewport={{ once: true }}
           >
             <h1 className="text-4xl font-bold mb-4">Find Your Perfect Car</h1>
-            <p className="text-xl mb-4">Searching </p>
+            <p className="text-xl mb-4">Searching</p>
 
           </motion.div>
 
           {/* Search Bar */}
           <motion.form
             onSubmit={handleSearch}
-            className="flex flex-col sm:flex-row gap-4 max-w-2xl"
+            className="flex flex-col sm:flex-row gap-4 max-w-2xl w-full justify-center mx-auto"
             variants={fadeIn("up", "tween", 0.4, 0.6) as any}
             initial="hidden"
             whileInView="show"
