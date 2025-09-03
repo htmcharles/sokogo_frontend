@@ -279,7 +279,7 @@ export const selectOptions = {
         { value: "pearl", label: "Pearl" },
         { value: "maroon", label: "Maroon" }
       ],
-        exteriorColors: [ag
+        exteriorColors: [
          { value: "black", label: "Black" },
         { value: "beige", label: "Beige" },
         { value: "gray", label: "Gray" },
