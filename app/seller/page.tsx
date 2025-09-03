@@ -191,10 +191,10 @@ export default function SellerDashboard() {
                       <span className="text-lg font-bold text-green-600">{product.currency} {product.price.toLocaleString()}</span>
                       <span className="text-sm text-gray-500">{product.category}</span>
                     </div>
-                    <div className="flex space-x-2">
+                    {/* <div className="flex space-x-2">
                       <Button variant="outline" size="sm" className="flex-1"><Edit className="w-4 h-4 mr-1" /> Edit</Button>
                       <Button variant="outline" size="sm" className="flex-1 text-red-600 hover:text-red-700"><Trash2 className="w-4 h-4 mr-1" /> Delete</Button>
-                    </div>
+                    </div> */}
                   </CardContent>
                 </Card>
               ))
