@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
+import { SiteHeader } from "@/components/SiteHeader"
 import { Plus, Package, TrendingUp, DollarSign, LogOut, Edit, Trash2, AlertCircle, RefreshCw } from "lucide-react"
 import { apiClient, type Item } from "@/lib/api"
 
@@ -65,23 +66,7 @@ export default function SellerDashboard() {
   return (
     <RoleProtectedRoute allowedRoles={["seller"]}>
       <div className="min-h-screen bg-gray-50">
-        {/* Header */}
-        <header className="bg-white border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-16">
-              <h1 className="text-2xl font-bold">
-                <span className="text-gray-800">SELLER</span>
-                <span className="text-red-600">DASHBOARD</span>
-              </h1>
-              <div className="flex items-center space-x-4">
-                <span className="text-gray-700">Welcome, {user?.firstName}</span>
-                <Button variant="outline" onClick={handleLogout} className="border-red-600 text-red-600 hover:bg-red-600 hover:text-white">
-                  <LogOut className="w-4 h-4 mr-2" /> Logout
-                </Button>
-              </div>
-            </div>
-          </div>
-        </header>
+        <SiteHeader />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Stats */}
