@@ -619,6 +619,17 @@ class ApiClient {
     return this.request<{ items: Item[] }>("/items/seller/my-items")
   }
 
+  async deleteItem(itemId: string): Promise<{ message: string }> {
+    // Ensure user is authenticated before deleting item
+    if (!this.ensureAuthenticated()) {
+      throw new Error("User must be logged in to delete items")
+    }
+
+    return this.request<{ message: string }>(`/items/${itemId}`, {
+      method: "DELETE",
+    })
+  }
+
   // Admin methods
   async getUsersByRole(
     role: string,

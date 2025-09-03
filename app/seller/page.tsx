@@ -61,7 +61,28 @@ export default function SellerDashboard() {
   const activeProducts = useMemo(() => products.filter(p => p.status === "ACTIVE" || p.status === "AVAILABLE").length, [products])
 
   const handleLogout = () => logout()
-  const retryFetchProducts = () => setFetchError(null) || setIsLoading(true) || apiClient.getMyItems().then(res => setProducts(res.items || [])).finally(() => setIsLoading(false))
+  const retryFetchProducts = () => {
+    setFetchError(null)
+    setIsLoading(true)
+    apiClient.getMyItems().then(res => setProducts(res.items || [])).finally(() => setIsLoading(false))
+  }
+
+  const handleDeleteItem = async (itemId: string) => {
+    if (!confirm("Are you sure you want to delete this item? This action cannot be undone.")) {
+      return
+    }
+
+    try {
+      await apiClient.deleteItem(itemId)
+      // Remove the deleted item from the local state
+      setProducts(prev => prev.filter(item => item._id !== itemId))
+      // Show success message (you can add a toast notification here if you have one)
+      console.log("Item deleted successfully")
+    } catch (error) {
+      console.error("Failed to delete item:", error)
+      alert("Failed to delete item. Please try again.")
+    }
+  }
 
   return (
     <RoleProtectedRoute allowedRoles={["seller"]}>
@@ -176,8 +197,23 @@ export default function SellerDashboard() {
                       <span className="text-lg font-bold text-green-600">{product.currency} {product.price.toLocaleString()}</span>
                       <span className="text-sm text-gray-500">{product.category}</span>
                     </div>
-                    <div className="flex space-x-2">
-                      <Button variant="outline" size="sm" className="flex-1 text-red-600 hover:text-red-700"><Trash2 className="w-4 h-4 mr-1" /> Delete</Button>
+                                        <div className="flex space-x-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 text-gray-600 hover:text-gray-700 hover:bg-gray-50"
+                        onClick={() => alert("Edit functionality coming soon!")}
+                      >
+                        <Edit className="w-4 h-4 mr-1" /> Edit
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 text-red-600 hover:text-red-700 hover:bg-red-50"
+                        onClick={() => handleDeleteItem(product._id)}
+                      >
+                        <Trash2 className="w-4 h-4 mr-1" /> Delete
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
