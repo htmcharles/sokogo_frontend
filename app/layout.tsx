@@ -15,7 +15,12 @@ export const metadata = {
   title: "SOKOGO - Buy & Sell Cars in Rwanda",
   description:
     "Rwanda's premier marketplace for cars. Buy and sell with confidence on SOKOGO.",
-    generator: 'v0.app'
+    generator: 'v0.app',
+    icons: {
+      icon: "/logo.jpg",
+      shortcut: "/logo.jpg",
+      apple: "/logo.jpg",
+    }
 }
 
 export default function RootLayout({
