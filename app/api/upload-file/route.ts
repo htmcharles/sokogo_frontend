@@ -6,7 +6,8 @@ export async function POST(req: NextRequest) {
     const formData = await req.formData();
     const file = formData.get("file") as File;
     const filename = req.nextUrl.searchParams.get("filename");
-    const overwrite = req.nextUrl.searchParams.get("overwrite") === "true";
+    const overwrite = req.nextUrl.searchParams.get("overwrite") === "true" ||
+      req.nextUrl.searchParams.get("allowOverwrite") === "true";
 
     if (!file || !filename) {
       return NextResponse.json({ error: "File and filename are required" }, { status: 400 });
