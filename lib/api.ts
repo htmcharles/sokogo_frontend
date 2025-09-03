@@ -309,8 +309,8 @@ class ApiClient {
     const payload = {
       title: listingData.title || `${make ? make.toUpperCase() : "Car"} ${model ? model.toUpperCase() : "Listing"}`,
       description: listingData.description || "",
-      price: this.parsePrice(listingData.price || ""),
-      currency: "RWF",
+      price: this.parsePriceFlexible(listingData.price),
+      currency: listingData.currency || "RWF",
       category: "MOTORS" as const,
       subcategory: "CARS",
       images: listingData.images || [],
@@ -407,6 +407,7 @@ class ApiClient {
       ...itemData,
       seller: this.userId,
       sellerId: this.userId,
+      price: this.parsePriceFlexible(itemData.price as any),
       // Merge any existing images with newly uploaded ones
       images: [ ...((itemData.images || []) as string[]) ],
     }
@@ -418,6 +419,26 @@ class ApiClient {
   }
 
   // Helper methods for parsing data
+  private parsePriceFlexible(priceInput: unknown): number {
+    // If it's already a finite number, use it directly
+    if (typeof priceInput === "number" && Number.isFinite(priceInput)) {
+      return priceInput
+    }
+
+    // If it's a numeric string, parse it
+    if (typeof priceInput === "string") {
+      const cleaned = priceInput.replace(/[,\s]/g, "")
+      const parsed = Number(cleaned)
+      if (Number.isFinite(parsed) && parsed > 0) {
+        return parsed
+      }
+      // Fallback to bucket mapping
+      return this.parsePrice(priceInput)
+    }
+
+    // Unknown or empty input
+    return 0
+  }
   private parsePrice(priceBucket: string): number {
     switch (priceBucket) {
       case "under-5m":
