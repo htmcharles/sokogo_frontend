@@ -122,15 +122,15 @@ class ApiClient {
             if (user._id && user._id !== "temp-id" && user._id.trim() !== "") {
               this.userId = user._id
               localStorage.setItem("userId", user._id)
-              console.log("[v0] Set userId from user object:", this.userId)
+              console.log("Set userId from user object:", this.userId)
             }
           } catch (error) {
-            console.error("[v0] Error parsing user from localStorage:", error)
+            console.error("Error parsing user from localStorage:", error)
           }
         }
       }
 
-      console.log("[v0] Refreshed user ID from localStorage:", this.userId)
+      console.log("Refreshed user ID from localStorage:", this.userId)
     }
   }
 
@@ -159,9 +159,9 @@ class ApiClient {
       }
     }
 
-    console.log("[v0] Making API request to:", url)
-    console.log("[v0] Request headers:", headers)
-    console.log("[v0] Request body:", options.body)
+    console.log("Making API request to:", url)
+    console.log("Request headers:", headers)
+    console.log("Request body:", options.body)
 
     try {
       const response = await fetch(url, {
@@ -171,22 +171,22 @@ class ApiClient {
         credentials: "include", // Include cookies/credentials to maintain login
       })
 
-      console.log("[v0] Response status:", response.status)
-      console.log("[v0] Response ok:", response.ok)
+      console.log("Response status:", response.status)
+      console.log("Response ok:", response.ok)
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({
           message: `HTTP error! status: ${response.status}`,
         }))
-        console.log("[v0] Error response:", errorData)
+        console.log("Error response:", errorData)
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
 
       const data = await response.json()
-      console.log("[v0] Success response:", data)
+      console.log("Success response:", data)
       return data
     } catch (error) {
-      console.error("[v0] API request failed:", error)
+      console.error("API request failed:", error)
       if (error instanceof TypeError && error.message.includes("fetch")) {
         throw new Error("Cannot connect to server. Please ensure the backend server is running on port 8000.")
       }
@@ -209,9 +209,9 @@ class ApiClient {
         localStorage.setItem("userId", userId)
         localStorage.setItem("user", JSON.stringify(response.user))
       }
-      console.log("[v0] Login - Stored user ID:", userId)
+      console.log("Login - Stored user ID:", userId)
     } else {
-      console.warn("[v0] Login - No user ID found in response:", response)
+              console.warn("Login - No user ID found in response:", response)
     }
 
     return response
@@ -225,7 +225,7 @@ class ApiClient {
     password: string
     role: "seller"
   }): Promise<RegisterResponse> {
-    console.log("[v0] Attempting registration with data:", { ...userData, password: "[HIDDEN]" })
+    console.log("Attempting registration with data:", { ...userData, password: "[HIDDEN]" })
     const response = await this.request<RegisterResponse>("/auth/register", {
       method: "POST",
       body: JSON.stringify(userData),
@@ -239,9 +239,9 @@ class ApiClient {
         localStorage.setItem("userId", userId)
         localStorage.setItem("user", JSON.stringify(response.user))
       }
-      console.log("[v0] Register - Stored user ID:", userId)
+              console.log("Register - Stored user ID:", userId)
     } else {
-      console.warn("[v0] Register - No user ID found in response:", response)
+              console.warn("Register - No user ID found in response:", response)
     }
 
     return response
@@ -256,7 +256,7 @@ class ApiClient {
     role: "seller"
     googleId: string
   }): Promise<RegisterResponse> {
-    console.log("[v0] Creating Google user with data:", {
+    console.log("Creating Google user with data:", {
       ...userData,
       password: userData.password ? "[HIDDEN]" : "none",
     })
