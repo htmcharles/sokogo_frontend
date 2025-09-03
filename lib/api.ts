@@ -296,6 +296,61 @@ class ApiClient {
     return this.request<Item>(`/items/${itemId}`)
   }
 
+  // Create listing method for cars
+  async createListing(listingData: any): Promise<{ message: string; item: Item }> {
+    // Ensure user is authenticated before creating listing
+    if (!this.ensureAuthenticated()) {
+      throw new Error("User must be logged in to create listings")
+    }
+
+    // Transform the listing data to match the backend API structure
+    const [make, model] = (listingData.makeModel || "").split("-")
+
+    const payload = {
+      title: listingData.title || `${make ? make.toUpperCase() : "Car"} ${model ? model.toUpperCase() : "Listing"}`,
+      description: listingData.description || "",
+      price: this.parsePrice(listingData.price || ""),
+      currency: "RWF",
+      category: "MOTORS" as const,
+      subcategory: "CARS",
+      images: listingData.images || [],
+      location: {
+        district: listingData.location || "",
+        city: listingData.location ? "Kigali" : "",
+        address: "",
+      },
+      features: {
+        make: make ? make.charAt(0).toUpperCase() + make.slice(1) : undefined,
+        model: model ? model.toUpperCase() : undefined,
+        year: listingData.year ? parseInt(listingData.year) : undefined,
+        kilometers: this.parseKilometers(listingData.kilometers || ""),
+        bodyType: listingData.bodyType ? listingData.bodyType.toUpperCase() : undefined,
+        isInsuredInRwanda: listingData.insured || undefined,
+        technicalControl: this.normalizeYesNo(listingData.technicalControl || ""),
+        exteriorColor: listingData.exteriorColor ? listingData.exteriorColor.charAt(0).toUpperCase() + listingData.exteriorColor.slice(1) : undefined,
+        interiorColor: listingData.interiorColor ? listingData.interiorColor.charAt(0).toUpperCase() + listingData.interiorColor.slice(1) : undefined,
+        warranty: listingData.warranty || undefined,
+        doors: this.toNumber(listingData.doors),
+        transmissionType: listingData.transmissionType ? listingData.transmissionType.charAt(0).toUpperCase() + listingData.transmissionType.slice(1) : undefined,
+        steeringSide: listingData.steeringSide ? (listingData.steeringSide === "left" ? "Left" : "Right") : undefined,
+        fuelType: listingData.fuelType ? listingData.fuelType.charAt(0).toUpperCase() + listingData.fuelType.slice(1) : undefined,
+        seatingCapacity: this.toNumber(listingData.seatingCapacity),
+        horsePower: this.toNumber(listingData.horsePower),
+        frontAirbags: listingData.technicalFeatures?.frontAirbags || undefined,
+        sideAirbags: listingData.technicalFeatures?.sideAirbags || undefined,
+        powerSteering: listingData.technicalFeatures?.powerSteering || undefined,
+        cruiseControl: listingData.technicalFeatures?.cruiseControl || undefined,
+        frontWheelDrive: listingData.technicalFeatures?.frontWheelDrive || undefined,
+        antiLockBrakesABS: listingData.technicalFeatures?.antiLockBrakes || undefined,
+      },
+    }
+
+    return this.request<{ message: string; item: Item }>("/items", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    })
+  }
+
   async createItem(itemData: {
     title: string
     description: string
@@ -362,6 +417,50 @@ class ApiClient {
     })
   }
 
+  // Helper methods for parsing data
+  private parsePrice(priceBucket: string): number {
+    switch (priceBucket) {
+      case "under-5m":
+        return 4000000
+      case "5m-10m":
+        return 7500000
+      case "10m-20m":
+        return 15000000
+      case "20m+":
+        return 20000000
+      default:
+        return 0
+    }
+  }
+
+  private parseKilometers(range: string): number | undefined {
+    switch (range) {
+      case "0-10000":
+        return 5000
+      case "10000-50000":
+        return 30000
+      case "50000-100000":
+        return 75000
+      case "100000+":
+        return 120000
+      default:
+        return undefined
+    }
+  }
+
+  private normalizeYesNo(value: string): string | undefined {
+    if (!value) return undefined
+    if (value === "valid") return "yes"
+    if (value === "expired") return "no"
+    return value
+  }
+
+  private toNumber(val: string): number | undefined {
+    if (!val) return undefined
+    const cleaned = val.replace(/[^0-9]/g, "")
+    return cleaned ? parseInt(cleaned) : undefined
+  }
+
   // Removed remote upload (Cloudinary/remote) in favor of local upload
 
   // Upload images to local Next.js API to save under public/uploads
@@ -385,6 +484,45 @@ class ApiClient {
     }
 
     return response.json()
+  }
+
+  // Upload product photos to Vercel Blob
+  async uploadProductPhotos(productId: string, files: File[]): Promise<{ message?: string; imageUrls: string[] }> {
+    if (!files || files.length === 0) {
+      return { imageUrls: [] }
+    }
+
+    try {
+      const uploadedUrls: string[] = []
+
+      // Upload each file to Vercel Blob
+      for (const file of files) {
+        const formData = new FormData()
+        formData.append("file", file)
+
+        const response = await fetch(`/api/upload-file?filename=${encodeURIComponent(file.name)}`, {
+          method: "POST",
+          body: formData,
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ message: `HTTP error! status: ${response.status}` }))
+          throw new Error(errorData.message || `HTTP error! status ${response.status}`)
+        }
+
+        const result = await response.json()
+        if (result.success && result.url) {
+          uploadedUrls.push(result.url)
+        }
+      }
+
+      return {
+        message: `${uploadedUrls.length} photos uploaded successfully`,
+        imageUrls: uploadedUrls
+      }
+    } catch (error: any) {
+      throw new Error(`Failed to upload photos: ${error.message}`)
+    }
   }
 
   async getMyItems(): Promise<{ items: Item[] }> {
