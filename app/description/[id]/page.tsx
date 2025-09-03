@@ -148,9 +148,6 @@ export default function DescriptionPage() {
               </h1>
             </div>
             <nav className="flex space-x-8">
-              <a href="/dashboard" className="text-gray-600 hover:text-red-600 px-3 py-2 text-sm font-medium">
-                Dashboard
-              </a>
               <a href="/search" className="text-gray-600 hover:text-red-600 px-3 py-2 text-sm font-medium">
                 Search
               </a>
