@@ -156,12 +156,13 @@ function FinalListingForm() {
           if (selectedFiles.length > 0) {
             setIsUploading(true);
 
-            // Upload each file to Vercel Blob
+            // Upload each file to Vercel Blob with unique filenames
             for (const file of selectedFiles) {
               const formData = new FormData();
               formData.append("file", file);
 
-              const response = await fetch(`/api/upload-file?filename=${encodeURIComponent(file.name)}`, {
+              const uniqueName = `${Date.now()}_${Math.random().toString(36).slice(2)}_${file.name}`;
+              const response = await fetch(`/api/upload-file?filename=${encodeURIComponent(uniqueName)}`, {
                 method: "POST",
                 body: formData,
               });
